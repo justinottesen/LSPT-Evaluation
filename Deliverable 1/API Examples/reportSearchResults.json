@@ -1,0 +1,15 @@
+{
+  "UI_UX_Request": {
+    "query": "RPI Professors",
+    "results": [
+      "TBD Format",
+      "Somehow lists the results",
+      "maybe some sort of unique ID",
+      "or maybe a list of JSON objects"
+    ]
+  },
+
+  "Eval_Response": {
+    "value": "Some sort of acknowledge"
+  }
+}

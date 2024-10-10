@@ -1,0 +1,14 @@
+{
+  "UI_UX_Request": {
+    "num_suggestions": 3,
+    "partial_query": "How do I "
+  },
+
+  "Eval_Response": {
+    "autofill_suggestions": [
+      "How do I pass Data Structures",
+      "How do I make a bomb",
+      "How do I get out of Arch"
+    ]
+  }
+}
