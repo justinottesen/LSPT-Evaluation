@@ -16,7 +16,5 @@
     }
   },
 
-  "Eval_Response": {
-    "value": "Some sort of acknowledge"
-  }
+  "Eval_Response": {}
 }

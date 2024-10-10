@@ -1,15 +1,12 @@
 {
   "Eval_Request": {
-    "query": "How do I parse a JSON file",
+    "processed_query": "Rensselaer Polytechnic Institute Professors",
     "links_ignored": [
       "link1.com",
-      "link2.com", 
-      "link3.com"
+      "link2.com"
     ],
     "link_clicked": "magical.awesome.link.com"
   },
 
-  "Ranking_Response": {
-    "value": "Some sort of acknowledge"
-  }
+  "Ranking_Response": {}
 }
