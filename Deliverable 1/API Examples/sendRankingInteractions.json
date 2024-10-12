@@ -1,0 +1,12 @@
+{
+  "Eval_Request": {
+    "processed_query": "Rensselaer Polytechnic Institute Professors",
+    "links_ignored": [
+      "link1.com",
+      "link2.com"
+    ],
+    "link_clicked": "magical.awesome.link.com"
+  },
+
+  "Ranking_Response": {}
+}

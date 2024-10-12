@@ -1,0 +1,20 @@
+{
+  "Component_Request": {
+    "example 1": {
+      "component": "querying",
+      "label": "Query Time",
+      "value": 1464
+    },
+    "example 2": {
+      "component": "crawling",
+      "label": "Broken Link",
+      "value": {
+        "broken_link": "abc.com",
+        "last_page": "xyz.com",
+        "origin_page": "rpi.edu"
+      }
+    }
+  },
+
+  "Eval_Response": {}
+}

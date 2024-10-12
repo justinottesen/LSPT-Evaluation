@@ -1,0 +1,16 @@
+{
+  "results": [
+    "link1.com",
+    "link2.com", 
+    "magical.awesome.link.com",
+    "link3.com"
+  ],
+  "clicked": [
+    "magical.awesome.link.com"
+  ],
+  "ignored": [
+    "link1.com",
+    "link2.com"
+  ],
+  "timestamp": "2022-09-27 18:00:00.000"
+}

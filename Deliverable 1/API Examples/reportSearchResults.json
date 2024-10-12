@@ -1,0 +1,18 @@
+{
+  "UI_UX_Request": {
+    "raw_query": "RPI Professors",
+    "processed_query": "Rensselaer Polytechnic Institute Professors",
+    "results": [
+      "link1.com",
+      "link2.com", 
+      "magical.awesome.link.com",
+      "link3.com"
+    ],
+    "clicked": [
+      "magical.awesome.link.com"
+    ],
+    "query_timestamp": "2022-09-27 18:00:00.000"
+  },
+
+  "Eval_Response": {}
+}
