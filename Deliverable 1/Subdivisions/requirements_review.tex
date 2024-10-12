@@ -15,6 +15,22 @@ $$ 15, 16, 19, 52, 60, 65, 66 $$
 
 Requirements 10 and 62 appear to be duplicates. Both are referencing using non-text formats to search, with 10 directly referencing images and 62 referencing any other format. 10 is a direct subset of 62 and so is unnecessary.
 
+\subsubsection*{Requirement 13}
+\begin{itemize}
+  \item[(13)] Translate search queries from other languages to English search queries
+\end{itemize}
+
+What languages are we translating into English? Every single language on earth? Random languages? The most popular language in the world? In this case we must specify either what languages to translate, or that an external device will be used to process this part.
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] “Translate search queries from any of the 10 most popular written languages to english.”
+  \item[] “Translate search queries from other languages to English using an external device for QOL.”
+\end{itemize}
+
+
 \subsubsection*{Requirements 16 \& 59}
 \begin{itemize}
   \item[(16)] Rank search results based on personal/user data, e.g., a student's major
@@ -30,21 +46,6 @@ Possible Alternatives for requirement 16:
 \begin{itemize}
   \item[] Delete the Requirement
   \item[] "Allow users to add specific personal data in a settings menu in order to receive better search results"
-\end{itemize}
-
-\subsubsection*{Requirement 13}
-\begin{itemize}
-  \item[(13)] Translate search queries from other languages to English search queries
-\end{itemize}
-
-What languages are we translating into English? Every single language on earth? Random languages? The most popular language in the world? In this case we must specify either what languages to translate, or that an external device will be used to process this part.
-
-\medskip
-
-Possible Alternatives:
-\begin{itemize}
-  \item[] “Translate search queries from any of the 10 most popular written languages to english.”
-  \item[] “Translate search queries from other languages to English using an external device for QOL.”
 \end{itemize}
 
 \subsubsection*{Requirement 24}
@@ -168,7 +169,7 @@ Possible Alternatives:
 \end{itemize}
 
 \subsection*{Missing Requirements}
-\subsubsection{Implicit Requirements}
+\subsubsection*{Implicit Requirements}
 \begin{itemize}
   \item Create program logs from all saveable data produced from the program
   \item Log when URL web pages are updated
@@ -180,7 +181,7 @@ Possible Alternatives:
   \item If there are more than 10 results, allow users to look through all the results by clicking a button to show more results
   \item Crawling should stop when data storage is full
 \end{itemize}
-\subsubsection{Other Requirements}
+\subsubsection*{Other Requirements}
 \begin{itemize}
   \item Store a list of blacklisted websites to exclude from crawling
   \item Allow for the creation of anonymous profiles for each user to support ranking based on personal data
