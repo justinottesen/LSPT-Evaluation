@@ -1,1 +1,196 @@
-Hello world, I am the requirements revies doc
+\subsection*{Evaluation Responsibilities}
+\subsubsection*{Directly Related Requirements}
+These requirements are those which we are directly responsible for, or play an integral role in the implementation of:
+$$ 28, 29, 32, 33, 34, 35, 36, 43, 44, 58, 59 $$
+\subsubsection*{Partially Related Requirements}
+These requirements are those which we may be involved in, however we are not directly responsible for:
+$$ 15, 16, 19, 52, 60, 65, 66 $$
+
+\subsection*{Ambiguous Requirements}
+\subsubsection*{Requirements 10 \& 62}
+\begin{itemize}
+  \item[(10)] Support image search (can we search for images by using image filenames, alternate image-text, links to image files, etc.?)
+  \item[(62)] Support non-text search queries, e.g., one or more images as the query
+\end{itemize}
+
+Requirements 10 and 62 appear to be duplicates. Both are referencing using non-text formats to search, with 10 directly referencing images and 62 referencing any other format. 10 is a direct subset of 62 and so is unnecessary.
+
+\subsubsection*{Requirements 16 \& 59}
+\begin{itemize}
+  \item[(16)] Rank search results based on personal/user data, e.g., a student's major
+  \item[(59)] Do not require/support user accounts or specific user logging
+\end{itemize}
+
+These two things cannot exist at the same time. (Mutually Exclusive)
+How would we rank based on user data when we don't support specific user logging? In this case expected functionality of our Search Engine is ambiguous.
+
+\medskip
+
+Possible Alternatives for requirement 16:
+\begin{itemize}
+  \item[] Delete the Requirement
+  \item[] "Allow users to add specific personal data in a settings menu in order to receive better search results"
+\end{itemize}
+
+\subsubsection*{Requirement 13}
+\begin{itemize}
+  \item[(13)] Translate search queries from other languages to English search queries
+\end{itemize}
+
+What languages are we translating into English? Every single language on earth? Random languages? The most popular language in the world? In this case we must specify either what languages to translate, or that an external device will be used to process this part.
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] “Translate search queries from any of the 10 most popular written languages to english.”
+  \item[] “Translate search queries from other languages to English using an external device for QOL.”
+\end{itemize}
+
+\subsubsection*{Requirement 24}
+\begin{itemize}
+  \item[(24)] Censor explicit results if needed
+\end{itemize}
+
+What does "needed" mean? This is too broad of a condition to be censoring explicit results. "Explicit results" is also vague, and should likely be defined, however that can be discussed outside of this specific requirement
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] "Provide an option for users to censor explicit results.”
+  \item[] "Censor explicit results for all users.”
+\end{itemize}
+
+\subsubsection*{Requirement 32}
+\begin{itemize}
+  \item[(32)] Allow users to easily remove some or all of their search history
+\end{itemize}
+
+How do you define "easily"? What some think is easy others may find difficult.
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] "Allow users to remove some or all of their search history"
+\end{itemize}
+
+\subsubsection*{Requirement 45}
+\begin{itemize}
+  \item[(45)] Generate a summary of results in the form of a suggested answer
+\end{itemize}
+
+This is a very ambiguous requirement and it's hard to know what specific set of results it refers to. Does this refer to Autofill, search results, or some other function? What is it generating a summary of results for? To be honest it is very hard to give an updated requirement as I do not know what is being asked here. 
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] "Generate a summary of results to any given query in the form of a suggested answer"
+  \item[] "Combine multiple results to generate a "suggested answer" that is offered to the user when a query returns enough data that a "suggested answer" can be synthesized"
+\end{itemize}
+
+\subsubsection*{Requirement 46}
+\begin{itemize}
+  \item[(46)] UI must be clean, easy to learn (intuitive), and easy to use
+\end{itemize}
+
+How do you define "clean", "easy to learn", or "easy to use"? All these are general adjectives that apply no real metric to measure against.
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] "UI must allow for most users to understand how to use the technology through a quick tutorial"
+\end{itemize}
+
+Although this opens another can of worms, what is defined as a "quick tutorial"...?
+
+\subsubsection*{Requirement 55}
+\begin{itemize}
+  \item[(55)] Support text-to-speech search results
+\end{itemize}
+
+What is going to be spoken out loud? The webpage title? The webpage links? If the user clicks on the link and enters the URL, is it our problem anymore?
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] "Support text-to-speech on the webpage titles of the search results."
+\end{itemize}
+
+\subsubsection*{Requirement 60}
+\begin{itemize}
+  \item[(60)] Support unlimited users querying simultaneously
+\end{itemize}
+
+Unlimited is a very large number. Unlimited is not a reasonable requirement for a search engine, so a reasonable number must be applied. What would a reasonable number be considered?
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] “Support at least 500 concurrent users sending queries within a 10 second window.”
+\end{itemize}
+
+\subsubsection*{Requirement 63}
+\begin{itemize}
+  \item[(63)] "Search results must never be empty, i.e., not possible for 'no results found'”
+\end{itemize}
+
+Depending on how this requirement is read it can be interpreted multiple ways. Does this mean to say when no results are found there will be a specific “no results found page”?
+Or does it mean to say that there must be results pulled no matter what the query is?
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] “A query must result either return a “no results found page” or a page with the corresponding search results.”
+  \item[] “A query must always return search results. If there are no immediately clear search results, the search parameters must be broadened until results are found.”
+\end{itemize}
+
+
+\subsubsection*{Requirement 66}
+\begin{itemize}
+  \item[(66)] "Ranking should consider search history”
+\end{itemize}
+
+Search history can be individual or global. Which does this requirement refer to? If we follow (59), its global, but if we follow (16), its individual.
+
+\medskip
+
+Possible Alternatives:
+\begin{itemize}
+  \item[] “Ranking will consider a user's search history”
+  \item[] “Ranking will consider the full Search Engine history”
+\end{itemize}
+
+\subsection*{Missing Requirements}
+\subsubsection{Implicit Requirements}
+\begin{itemize}
+  \item Create program logs from all saveable data produced from the program
+  \item Log when URL web pages are updated
+  \item Administration can access all logs through command lines to ensure maintainability
+  \item When a user clicks on a search result, open the webpage in another tab or window
+  \item There is a search bar where the user can type their query
+  \item Typing in the search bar should have the current query show in the search bar
+  \item After a query is entered, show the first 10 results on the first page
+  \item If there are more than 10 results, allow users to look through all the results by clicking a button to show more results
+  \item Crawling should stop when data storage is full
+\end{itemize}
+\subsubsection{Other Requirements}
+\begin{itemize}
+  \item Store a list of blacklisted websites to exclude from crawling
+  \item Allow for the creation of anonymous profiles for each user to support ranking based on personal data
+\end{itemize}
+
+\subsection*{Avoiding Marginalization}
+\begin{itemize}
+  \item Ensure the results that show up first are credible sources
+  \item Add a disclaimer regarding the uncertainty of untrustworthy sites
+  \item Queries with typos or slang should have similar results to similar "well formed" queried
+  \item Queries in other supported languages should have similar results to their equivalent english queries
+  \item Allow a "safe search" option
+\end{itemize}
