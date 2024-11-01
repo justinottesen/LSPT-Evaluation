@@ -5,6 +5,7 @@
   },
 
   "Eval_Response": {
+    "num_suggestions":3,
     "autofill_suggestions": [
       "How do I pass Data Structures",
       "How do I make a bomb",
