@@ -1,6 +1,7 @@
 ### C++ & GoogleTest
 
 bin
+!Code/eval_env/bin
 obj
 googletest/
 
