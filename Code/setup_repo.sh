@@ -12,9 +12,13 @@ else
   echo "Found googletest at $GTEST_DIR"
 fi
 
-echo "Building googletest"
-cd "$GTEST_DIR"
-mkdir -p build
-cd build
-cmake ..
-make
+if [ ! -d "$GTEST_DIR/build" ]; then
+  echo "Building googletest"
+  cd "$GTEST_DIR"
+  mkdir -p build
+  cd build
+  cmake ..
+  make
+else
+  echo "Google test already built"
+fi
