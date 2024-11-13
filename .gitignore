@@ -1,3 +1,9 @@
+### C++ & GoogleTest
+
+bin
+obj
+googletest/
+
 ### LATEX
 
 ## Core latex/pdflatex auxiliary files:
