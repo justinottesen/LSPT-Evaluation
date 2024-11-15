@@ -5,6 +5,12 @@ Description TBD...
 
 ## Build Instructions
 
+### Required
+
+- cmake (Minimum version 3.13)
+- clang
+- python3
+
 ### Upon Cloning the Repository
 
 Begin by running the `setup_repo.sh` script. This will do more in the future. Currently it does the following:
@@ -29,8 +35,6 @@ Alternatively, the `make run` shortcut will also do this
 #### Evaltool
 
 Currently this is python, and it is set up with the shebang, so all that is necessary should be `./evaltool/evaltool.py <arguments>`. This may change if we choose to use C++.
-
-You also may need to enter the python virtual environment, by running `source eval_env/bin/activate`.
 
 #### Unit Tests
 

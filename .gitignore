@@ -3,7 +3,7 @@
 bin
 !Code/eval_env/bin
 obj
-googletest/
+googletest*
 
 ### Python
 __pycache__
