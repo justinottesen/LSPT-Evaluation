@@ -1,3 +1,13 @@
+### C++ & GoogleTest
+
+bin
+!Code/eval_env/bin
+obj
+googletest/
+
+### Python
+__pycache__
+
 ### LATEX
 
 ## Core latex/pdflatex auxiliary files:
