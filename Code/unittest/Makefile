@@ -8,6 +8,9 @@ LDLIBS = -lgtest_main -lgtest
 
 all: $(TESTS)
 
+run: bin/$(TESTS)
+	./bin/$(TESTS)
+
 clean:
 	rm -rf bin obj
 
