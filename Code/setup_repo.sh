@@ -16,6 +16,12 @@ if ! clang --version > /dev/null 2>&1; then
   exit 1
 fi
 
+echo "> Ensuring make is installed ..."
+if ! make --version > /dev/null 2>&1; then
+  echo "make is not installed."
+  exit 1
+fi
+
 echo "> Ensuring cmake is installed ..."
 if ! cmake --version > /dev/null 2>&1; then
   echo "cmake is not installed."
