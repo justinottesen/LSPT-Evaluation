@@ -1,0 +1,24 @@
+name: Code Formatting & Linting
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  clang_format:
+    name: Clang Format
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository 
+      uses: actions/checkout@v4
+
+    - name: Check Evaluation Formatting
+      uses: git clang-format
+      working-directory: Code/evaluation
+
+    - name: Check Unittest Formatting
+      uses: git clang-format
+      working-directory: Code/unittest

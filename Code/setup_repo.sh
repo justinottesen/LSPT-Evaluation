@@ -4,28 +4,36 @@ set -euo pipefail
 
 REPO_DIR="$(pwd)"
 
-echo "> Ensuring python3 is installed ..."
-if ! python3 --version > /dev/null 2>&1; then
-  echo "Python3 is missing or version is too low."
-  exit 1
-fi
+if [ "${1-}" != "no-install-checks" ]; then
+  echo "> Ensuring python3 is installed ..."
+  if ! python3 --version > /dev/null 2>&1; then
+    echo "Python3 is missing or version is too low."
+    exit 1
+  fi
 
-echo "> Ensuring clang is installed ..."
-if ! clang --version > /dev/null 2>&1; then
-  echo "clang is not installed."
-  exit 1
-fi
+  echo "> Ensuring clang is installed ..."
+  if ! clang --version > /dev/null 2>&1; then
+    echo "clang is not installed."
+    exit 1
+  fi
 
-echo "> Ensuring cmake is installed ..."
-if ! cmake --version > /dev/null 2>&1; then
-  echo "cmake is not installed."
-  exit 1
-fi
+  echo "> Ensuring make is installed ..."
+  if ! make --version > /dev/null 2>&1; then
+    echo "make is not installed."
+    exit 1
+  fi
 
-echo "> Ensuring pytest is installed ..."
-if ! pytest --version > /dev/null 2>&1; then
-  echo "pytest is not installed."
-  exit 1
+  echo "> Ensuring cmake is installed ..."
+  if ! cmake --version > /dev/null 2>&1; then
+    echo "cmake is not installed."
+    exit 1
+  fi
+
+  echo "> Ensuring pytest is installed ..."
+  if ! pytest --version > /dev/null 2>&1; then
+    echo "pytest is not installed."
+    exit 1
+  fi
 fi
 
 echo "> Ensuring GoogleTest libraries & headers are available ..."
