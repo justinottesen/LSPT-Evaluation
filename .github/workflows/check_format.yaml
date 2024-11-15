@@ -15,10 +15,5 @@ jobs:
     - name: Checkout Repository 
       uses: actions/checkout@v4
 
-    - name: Check Evaluation Formatting
-      uses: git clang-format
-      working-directory: Code/evaluation
-
-    - name: Check Unittest Formatting
-      uses: git clang-format
-      working-directory: Code/unittest
+    - name: Check Formatting
+      run: git clang-format
