@@ -20,7 +20,7 @@ jobs:
     
     - name: Compile Unit Tests
       run: make
-      working_directory: Code/unittest
+      working-directory: Code/unittest
     
     - name: Run Unit Tests
       run: make run
