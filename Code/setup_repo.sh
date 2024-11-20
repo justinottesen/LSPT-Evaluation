@@ -61,4 +61,10 @@ if $MISSING; then
   make -C "$REPO_DIR/googletest/build" > /dev/null 2>&1
 fi
 
+echo "> Ensuring sqlite3.o exists ..."
+if [ ! -f "$REPO_DIR/sqlite/sqlite3.o" ]; then
+  echo "  > Compiling sqlite3.c -> sqlite3.o"
+  clang -o sqlite/sqlite3.o sqlite/sqlite3.c -c
+fi
+
 echo Setup Complete!
