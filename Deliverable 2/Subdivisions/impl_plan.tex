@@ -1,0 +1,38 @@
+Our implementation will be split into two parts
+
+\subsection*{Main Component - evaluation:}
+
+This is the portion that will be interacting with other components in the search engine. It will be written in C++, since we are going to be taking in a lot of data from all other components, and we need to run efficiently. While we are (mostly) outside of the active user path, we still need to be incredibly efficient, as we are collecting tons of data, and do not want to fall behind. This meant that we were limited to fast and efficient system level languages, like C, C++, or Rust, or using some external library in a higher level language like Python. We ultimately chose C++ since we had the most familiarity with this out of all other options.
+
+\medskip
+
+We will be using a variety of tools to ensure our code is styled uniformly and maintaining best practices:
+\begin{enumerate}
+  \item \textbf{Clang Format}: We will be using \verb|clang-format| to ensure we have the same formatting for our code. We are deciding whether this will be loosely enforced through a pre-commit hook, or strongly enforced using GitHub's Pull Request checks.
+  \item \textbf{Naming Conventions}: \verb|clang-format| does not enforce naming conventions. We will use snake case for variables, and camel case for classes, structs, and functions. The reviewers of pull requests will be responsible for catching this.
+  \item \textbf{Clang Tidy}: We will also use \verb|clang-tidy| to enforce code quality. This is highly customizable, so we are still looking into this and how we will set up the checks, but it is a very useful tool for static code analysis.
+  \item \textbf{GoogleTest}: We will be using the GoogleTest library for writing unit tests. We are unsure of our target coverage, as some things may not be possible to unit test, but this should be relatively exhaustive. Every Pull Request should have added unit tests.
+  \item \textbf{The Compiler}: We will be using \verb|clang++| as our compiler. To enforce warnings and errors, we will be using the following compilation command:
+  \begin{center}
+    \verb|clang++ -Wall -Wextra -Werror -std=c++20|
+  \end{center}
+  We are using Makefiles to streamline the build process, and assist in making sure the warnings are enabled.
+  \item \textbf{Pull Request Checks}: Each pull request targeted towards \verb|master| will need to pass several checks in order to merge into master. Currently, these include passing all unit and component tests, and securing two reviews from teammates. We plan to also incorporate \verb|clang-format|, \verb|clang-tidy|, and test coverage into this process. 
+\end{enumerate}
+
+\subsection*{Admin \& Testing Component - evaltool}
+
+We will be creating a secondary component called \verb|evaltool| which is a tool that helps the main \verb|evaluation| component. It will provide admin with easy access to data stores as well as assist with our component test suite. Because this component is not at all in the user path, we prioritized features over efficiency, making Python an easy choice. This allows us to use \verb|pytest| seamlessly with our testing tool for component testing, and allows us to produce code quickly without much concern for lower level details. Efficiency is not much of a concern, since the performance of the tool is not in the user path.
+
+\medskip
+
+Similarly to the above, we will be using several tools to ensure code quality:
+\begin{enumerate}
+  \item \textbf{Flake8}: We will be using flake8 for enforcing style consistency. We do not have a lot of experience with tooling for Python, this is just what is used at one of our team member's jobs.
+  \item \textbf{Black}: This will enforce python formatting. Again, similarly to the above, this is not well known, but it is used at a team member's job.
+  \item \textbf{Pytest}: This is our component testing tool. This will be responsible for the majority of the testing which is done, and should be exhaustive and extensive
+  \item \textbf{Documentation}: The commands and arguments will be heavily described and documented in the codebase, to allow inexperienced admins or admins from other teams to use the tool if needed.
+  \item \textbf{Pull Request Checks}: Similarly to above, Flake8 and Black will run on each pull request, as well as the Pytest test suite. Merging to master will not be allowed unless all checks pass. The same review requirements apply to this code as well.
+\end{enumerate}
+
+To ensure all of this is working properly on the developer's machine, and that everyone has a relatively uniform setup, there is a \verb|setup_repo.sh| script which following its name, sets up the repository for the developer. It checks to ensure the necessary libraries and packages are installed, ensures GoogleTest is downloaded and ready, and will create a python virtualenv for the developer. This script will grow as more tools are used, and more setup is required. The goal is for the developer to be able to clone, run the script, and immediately be set up to build and write code for the project.
