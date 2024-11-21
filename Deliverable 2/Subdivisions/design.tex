@@ -268,3 +268,68 @@ These are the functions which other components will call for us to take action o
 \smallskip
 
 \textbf{Side Effects:} The feedback is stored for admin viewing.
+
+\subsection*{Design Review}
+
+\subsubsection*{Internal Design Review}
+
+\textbf{Date:} November 18, 2024 \\
+\textbf{Duration:} 7:00 PM - 8:00 PM \\
+\textbf{Participants:} Justin Ottesen (Team Lead), Kenji Chevray, Jayak Patel, Nahuel Fernandez \\
+\textbf{Component Reviewed:} Evaluation Component
+
+\medskip
+
+\textbf{Objectives:}
+\begin{itemize}
+  \item Talk through the entire design plan to confirm details and resolve ambiguities
+  \item Prepare for design review the following day with Document Data Store
+\end{itemize}
+Notes were taken first on a Word document, then on comments in the GitHub repository. The full write-up of the design review was completed the following day. It is accessible \href{https://docs.google.com/document/d/1REwOedsmrtoQbACQpFj3Ti8JiCDlrIysBp8OR26vRdU/edit?tab=t.0}{here}. The GitHub pull request with comments is accessible \href{https://github.com/justinottesen/LSPT-Evaluation/pull/27/commits/00ec74d93f1943b2d434e28471a2d04adcd9872c#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5}{here}.
+
+\medskip
+
+As a result of our design review, these aspects of our design will be either updated or remain as previously decided upon:
+\begin{enumerate}
+  \item Sockets - UDP sockets will continue to be used\footnote{After our design review with DDS, our plans changed. Will be using REST API}.
+  \item All information will be sent and received in JSON format as before. Additionally we will require a wrapper around all incoming messages to give additional information\footnote{After our decision to use REST API, the wrapper is no longer needed. This information will be replaced with header data.}.
+  \item No ACK messages will be sent for any received metrics; the potential losses are offset by the increased ease of use and speed. Future releases may re-implement ACK messages.
+  \item In the JSON wrapper for metrics, all components will need to have unique names, even those that have the same functionality, UI/UX, Indexing, Ranking, Link Analysis.
+  \item Query ID will be of the type: Unsigned Integer
+  \item All results from reportSearchResults will be identified using URL
+  \item All metrics in search history will be maintained as planned. We had considered removing some metrics, but with low cost of storing, we would rather have too much than too little data.
+  \item We will limit the maximum number of Query IDs that can be called in getQueryData.
+  \item If there are bottlenecks, order of importance is: QueryID, Autofill, Everything else.
+  \item Discussion of complete list of metrics requested from each component. Some additions, removals, and changes.
+\end{enumerate}
+In preparation for our design review with Document Data Store we condensed all data and prepared a couple of questions for them to provide feedback on.
+
+\subsubsection*{Document Data Store Design Review}
+
+\textbf{Date:} November 19, 2024 \\
+\textbf{Duration:} 8:00 PM - 8:45 PM (Our review of their design was 8:45 PM - 9:30 PM)\\
+\textbf{Participants:} \\
+Evaluation Team: Justin Ottesen (Team Lead), Kenji Chevray, Jayak Patel, Nahuel Fernandez \\
+Document Data Store Team: Ben, Kale, Jose, Chaitanya \\
+\textbf{Component Reviewed:} Evaluation Component
+
+\medskip
+
+\textbf{Objectives:}
+\begin{itemize}
+  \item Talk through our entire design plan to confirm details and resolve ambiguities. 
+\end{itemize}
+
+Notes were taken first on a Word document, and further feedback was relayed over discord. The full write-up of the design review was completed the following day. It is accessible \href{https://docs.google.com/document/d/1REwOedsmrtoQbACQpFj3Ti8JiCDlrIysBp8OR26vRdU/edit?tab=t.0}{here}.
+
+\medskip
+
+As a result of our design review, these aspects of our design will be either updated or remain as previously decided upon:
+\begin{enumerate}
+  \item Sockets - Ben has knowledge beyond what any of us have, and suggested using REST API. For now we are unsure, and need to do further research. The following day, we decided to change our format to use REST API
+  \item We discussed potential RAM and storage problems associated with using a small VM. At this point we will do what we can with the available resources as will DDS and we will hope that more will be allocated to us in the future
+  \item MongoDB. Because DDS will already be running an instance of MongoDB, DDS suggested that we use MongoDB to store the metrics received from other components. This will be our updated database for storing our metrics. 
+  \item We added additional metrics to be received from both DDS and other components
+  \item The remainder of our design plans remained as they were decided on in the internal review the previous day.
+\end{enumerate}
+Upon the completion of our design review, DDS began their design review. It was during their design review that mentions of MongoDB and the REST API were suggested to us. We provided similar discussion and feedback to their design review, and at the conclusion, we(both DDS and Evaluation) discussed more about the SE as a whole and sent out pings to everyone in the server to provide clarification about the SE as a whole.
