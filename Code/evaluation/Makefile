@@ -13,7 +13,7 @@ CFLAGS =
 # C++ flags
 CXXFLAGS = -std=c++20
 # C/C++ flags
-CPPFLAGS = -Wall -Wextra -Werror
+CPPFLAGS = -Wall -Wextra -Werror -I../sqlite
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags
@@ -28,7 +28,7 @@ SRC = src
 
 HEADERS := $(wildcard $(SRC)/*.h $(SRC)/*.hpp)
 
-SOURCES := $(wildcard $(SRC)/*.c $(SRC)/*.cc $(SRC)/*.cpp $(SRC)/*.cxx)
+SOURCES := $(wildcard $(SRC)/*.c $(SRC)/*.cc $(SRC)/*.cpp $(SRC)/*.cxx ../sqlite/*.c)
 
 OBJECTS := \
 	$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(wildcard $(SRC)/*.c)) \
@@ -50,7 +50,7 @@ LINK.o = $(LD) $(LDFLAGS) $(LDLIBS) $(OBJECTS) -o $@
 all: $(BIN)/$(EXE)
 
 $(BIN)/$(EXE): $(SRC) $(OBJ) $(BIN) $(OBJECTS)
-	$(LINK.o)
+	$(LINK.o) ../sqlite/sqlite3.o
 
 $(SRC):
 	mkdir -p $(SRC)

@@ -1,0 +1,321 @@
+Beware, we are using Test Driven Development. These unit tests will drive functionality, however they are not final, and behavior may change.
+
+\subsection*{JSON Parser}
+
+The first set of tests is for a JSON Parser. Since all of our received messages will be in JSON format, this is incredibly important for our component. A set of unit tests are below (written in the GoogleTest framework which we are using for our component)
+
+\begin{verbatim}
+using namespace std;
+
+class JSONParserTest : public ::testing::Test {
+protected:
+    JSONParser parser;
+
+    // Helper function to test parsing a JSON string and returning the parsed value
+    JSONParser::json_value parseJson(const string& json_str) {
+        return parser.parse(json_str);
+    }
+};
+
+// Test parsing a simple string
+TEST_F(JSONParserTest, ParseString) {
+    string json_str = R"("hello world")";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<string>(parsed), "hello world");
+}
+
+// Test parsing a number
+TEST_F(JSONParserTest, ParseNumber) {
+    string json_str = "42";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<double>(parsed), 42);
+}
+
+TEST_F(JSONParserTest, ParseNegativeNumber) {
+    string json_str = "-42";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<double>(parsed), -42);
+}
+
+TEST_F(JSONParserTest, ParseFloatNumber) {
+    string json_str = "3.14";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<double>(parsed), 3.14);
+}
+
+// Test parsing booleans
+TEST_F(JSONParserTest, ParseTrue) {
+    string json_str = "true";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<bool>(parsed), true);
+}
+
+TEST_F(JSONParserTest, ParseFalse) {
+    string json_str = "false";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<bool>(parsed), false);
+}
+
+// Test parsing null
+TEST_F(JSONParserTest, ParseNull) {
+    string json_str = "null";
+    auto parsed = parseJson(json_str);
+    ASSERT_EQ(std::get<nullptr_t>(parsed), nullptr);
+}
+
+// Test parsing an empty object
+TEST_F(JSONParserTest, ParseEmptyObject) {
+    string json_str = "{}";
+    auto parsed = parseJson(json_str);
+    ASSERT_TRUE(std::holds_alternative<map<string, JSONParser::json_value>>(parsed));
+    auto& obj = std::get<map<string, JSONParser::json_value>>(parsed);
+    ASSERT_TRUE(obj.empty());
+}
+
+// Test parsing an object with one key-value pair
+TEST_F(JSONParserTest, ParseObjectWithOnePair) {
+    string json_str = R"({"key": "value"})";
+    auto parsed = parseJson(json_str);
+    auto& obj = std::get<map<string, JSONParser::json_value>>(parsed);
+    ASSERT_EQ(obj.size(), 1);
+    ASSERT_EQ(std::get<string>(obj["key"]), "value");
+}
+
+// Test parsing an array with multiple elements
+TEST_F(JSONParserTest, ParseArrayWithMultipleElements) {
+    string json_str = "[1, 2, 3]";
+    auto parsed = parseJson(json_str);
+    auto& arr = std::get<vector<JSONParser::json_value>>(parsed);
+    ASSERT_EQ(arr.size(), 3);
+    ASSERT_EQ(std::get<double>(arr[0]), 1);
+    ASSERT_EQ(std::get<double>(arr[1]), 2);
+    ASSERT_EQ(std::get<double>(arr[2]), 3);
+}
+
+// Test parsing a nested object inside an array
+TEST_F(JSONParserTest, ParseArrayWithObject) {
+    string json_str = R"([{"key": "value"}, 42])";
+    auto parsed = parseJson(json_str);
+    auto& arr = std::get<vector<JSONParser::json_value>>(parsed);
+    ASSERT_EQ(arr.size(), 2);
+
+    auto& obj = std::get<map<string, JSONParser::json_value>>(arr[0]);
+    ASSERT_EQ(obj.size(), 1);
+    ASSERT_EQ(std::get<string>(obj["key"]), "value");
+
+    ASSERT_EQ(std::get<double>(arr[1]), 42);
+}
+
+// Test parsing a nested array inside an object
+TEST_F(JSONParserTest, ParseObjectWithArray) {
+    string json_str = R"({"numbers": [1, 2, 3]})";
+    auto parsed = parseJson(json_str);
+    auto& obj = std::get<map<string, JSONParser::json_value>>(parsed);
+    ASSERT_EQ(obj.size(), 1);
+
+    auto& arr = std::get<vector<JSONParser::json_value>>(obj["numbers"]);
+    ASSERT_EQ(arr.size(), 3);
+    ASSERT_EQ(std::get<double>(arr[0]), 1);
+    ASSERT_EQ(std::get<double>(arr[1]), 2);
+    ASSERT_EQ(std::get<double>(arr[2]), 3);
+}
+
+// Test parsing an object with multiple key-value pairs
+TEST_F(JSONParserTest, ParseObjectWithMultiplePairs) {
+    string json_str = R"({"name": "Alice", "age": 25, "isStudent": false})";
+    auto parsed = parseJson(json_str);
+    auto& obj = std::get<map<string, JSONParser::json_value>>(parsed);
+    
+    ASSERT_EQ(obj.size(), 3);
+    ASSERT_EQ(std::get<string>(obj["name"]), "Alice");
+    ASSERT_EQ(std::get<double>(obj["age"]), 25);
+    ASSERT_EQ(std::get<bool>(obj["isStudent"]), false);
+}
+
+// Test parsing invalid JSON
+TEST_F(JSONParserTest, ParseInvalidJSON) {
+    // Missing closing quote in string
+    string json_str = R"("missing closing quote)";
+    EXPECT_THROW(parseJson(json_str), std::invalid_argument);
+
+    // Invalid character (unescaped quotes inside string)
+    json_str = R"("invalid " quote")";
+    EXPECT_THROW(parseJson(json_str), std::invalid_argument);
+
+    // Missing comma in object
+    json_str = R"({"name": "Alice" "age": 25})";
+    EXPECT_THROW(parseJson(json_str), std::invalid_argument);
+
+    // Invalid number
+    json_str = "3.14.15";
+    EXPECT_THROW(parseJson(json_str), std::invalid_argument);
+
+    // Unexpected end of input
+    json_str = R"({"name": "Alice")";
+    EXPECT_THROW(parseJson(json_str), std::invalid_argument);
+}
+\end{verbatim}
+
+\subsection*{SQLite Wrapper}
+
+We will be abstracting the SQLite functionality into a wrapper class, as this is the main datastore for our component. This testing is integral to ensuring we process data as planned, and have no surprises when interacting with other components.
+
+\begin{verbatim}
+// Test opening and closing of the database
+TEST_F(SQLiteWrapperTest, OpenDatabase) {
+    // In-memory database should open without errors
+    EXPECT_NO_THROW(SQLiteWrapper(":memory:"));
+}
+
+// Test basic SQL execution (INSERT)
+TEST_F(SQLiteWrapperTest, ExecuteQuery) {
+    std::string createTableSQL = "CREATE TABLE test(id INTEGER PRIMARY KEY, name TEXT);";
+    EXPECT_NO_THROW(db->execute(createTableSQL));
+
+    std::string insertSQL = "INSERT INTO test(name) VALUES ('Alice');";
+    EXPECT_NO_THROW(db->execute(insertSQL));
+
+    std::string selectSQL = "SELECT name FROM test WHERE id = 1;";
+    auto result = db->query(selectSQL);
+    ASSERT_EQ(result.size(), 1);
+    ASSERT_EQ(result[0].at("name"), "Alice");
+}
+
+// Test query with multiple rows (SELECT)
+TEST_F(SQLiteWrapperTest, SelectMultipleRows) {
+    std::string createTableSQL = "CREATE TABLE test(id INTEGER PRIMARY KEY, name TEXT);";
+    EXPECT_NO_THROW(db->execute(createTableSQL));
+
+    std::string insertSQL1 = "INSERT INTO test(name) VALUES ('Alice');";
+    std::string insertSQL2 = "INSERT INTO test(name) VALUES ('Bob');";
+    EXPECT_NO_THROW(db->execute(insertSQL1));
+    EXPECT_NO_THROW(db->execute(insertSQL2));
+
+    std::string selectSQL = "SELECT name FROM test;";
+    auto result = db->query(selectSQL);
+    ASSERT_EQ(result.size(), 2);
+    ASSERT_EQ(result[0].at("name"), "Alice");
+    ASSERT_EQ(result[1].at("name"), "Bob");
+}
+
+// Test invalid SQL execution (e.g., syntax error)
+TEST_F(SQLiteWrapperTest, InvalidSQL) {
+    std::string invalidSQL = "INVALID SQL";
+    EXPECT_THROW(db->execute(invalidSQL), std::runtime_error);
+}
+
+// Test query for non-existing table (SELECT)
+TEST_F(SQLiteWrapperTest, QueryNonExistingTable) {
+    std::string selectSQL = "SELECT * FROM non_existing_table;";
+    EXPECT_THROW(db->query(selectSQL), std::runtime_error);
+}
+
+// Test empty result set
+TEST_F(SQLiteWrapperTest, EmptyQueryResult) {
+    std::string createTableSQL = "CREATE TABLE test(id INTEGER PRIMARY KEY, name TEXT);";
+    EXPECT_NO_THROW(db->execute(createTableSQL));
+
+    std::string selectSQL = "SELECT name FROM test WHERE id = 999;";
+    auto result = db->query(selectSQL);
+    ASSERT_EQ(result.size(), 0);
+}
+
+// Test database closing automatically with RAII
+TEST_F(SQLiteWrapperTest, DatabaseClosedOnDestruction) {
+    {
+        SQLiteWrapper dbWrapper(":memory:");
+        std::string createTableSQL = "CREATE TABLE test(id INTEGER PRIMARY KEY, name TEXT);";
+        EXPECT_NO_THROW(dbWrapper.execute(createTableSQL));
+    }
+    // dbWrapper is out of scope here and the database is automatically closed
+    // No exception should be thrown
+    EXPECT_NO_THROW(SQLiteWrapper(":memory:"));
+}
+\end{verbatim}
+
+\subsection*{Monotonic Number Generator}
+
+Another crucial piece of functionality we rely on is a monotonically increasing number generator. This is used to generate Query IDs. The component will not behave properly if we repeat numbers, even in case of program crashes and restarts.
+
+\begin{verbatim}
+// Test that the generator starts at 1 and increments correctly
+TEST_F(MonotonicNumberGeneratorTest, StartAndIncrement) {
+    EXPECT_EQ(generator->getNextNumber(), 1);
+    EXPECT_EQ(generator->getNextNumber(), 2);
+    EXPECT_EQ(generator->getNextNumber(), 3);
+}
+
+// Test that the generator state is saved and restored correctly
+TEST_F(MonotonicNumberGeneratorTest, StatePersistence) {
+    // Generate a few numbers and save the state
+    generator->getNextNumber();  // Should return 1
+    generator->getNextNumber();  // Should return 2
+    generator->getNextNumber();  // Should return 3
+
+    // Destroy and create a new instance to simulate a restart
+    delete generator;
+    generator = new MonotonicNumberGenerator(file_path);
+
+    // Ensure state is restored, so the next number should be 4
+    EXPECT_EQ(generator->getNextNumber(), 4);
+}
+
+// Test that the generator works correctly when the file doesn't exist initially
+TEST_F(MonotonicNumberGeneratorTest, NoFileInitially) {
+    // Ensure the generator starts at 1
+    EXPECT_EQ(generator->getNextNumber(), 1);
+}
+
+// Test that the generator doesn't return the same number twice
+TEST_F(MonotonicNumberGeneratorTest, NoRepeatedNumbers) {
+    long long first = generator->getNextNumber();
+    long long second = generator->getNextNumber();
+    EXPECT_NE(first, second);
+}
+
+// Test that the generator works across multiple instances (simulate a crash recovery)
+TEST_F(MonotonicNumberGeneratorTest, CrashRecovery) {
+    // Generate and save state
+    generator->getNextNumber();
+    generator->getNextNumber();
+    generator->getNextNumber();
+
+    delete generator;
+
+    // Simulate recovery by creating a new instance
+    generator = new MonotonicNumberGenerator(file_path);
+
+    // The next number after recovery should continue from the previous number
+    EXPECT_EQ(generator->getNextNumber(), 4);
+}
+
+// Test that the generator can handle concurrency (multiple threads accessing the generator)
+TEST_F(MonotonicNumberGeneratorTest, ThreadSafety) {
+    const int num_threads = 10;
+    std::vector<std::thread> threads;
+    std::set<long long> results;
+
+    // Launch multiple threads that get the next number
+    for (int i = 0; i < num_threads; ++i) {
+        threads.emplace_back([this, &results]() {
+            results.insert(generator->getNextNumber());
+        });
+    }
+
+    // Wait for all threads to finish
+    for (auto& t : threads) {
+        t.join();
+    }
+
+    // Ensure that all the numbers are unique (monotonically increasing)
+    EXPECT_EQ(results.size(), num_threads);
+}
+
+// Test that the generator throws an exception when the file cannot be opened for writing
+TEST_F(MonotonicNumberGeneratorTest, FileWriteError) {
+    // Simulate a situation where the file cannot be opened by setting an invalid path
+    generator->~MonotonicNumberGenerator();
+    generator = new MonotonicNumberGenerator("/invalid/path/test_state.txt");
+
+    EXPECT_THROW(generator->saveState(), std::runtime_error);
+} \end{verbatim}
