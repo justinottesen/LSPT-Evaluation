@@ -16,6 +16,7 @@ High Level Changes:
 
 Report User Feedback is a simple operation, so no lower level DFDs are needed. The exact data received form UI/UX will be dumped to text files.
 
+\newpage
 \subsubsection*{Level 1 DFDs}
 
 \textbf{Read Search Data}
@@ -37,7 +38,6 @@ After each query, the UI/UX team will send the user interaction data to us to be
 \begin{center}
   \includegraphics[scale=0.5]{DFDs/LowLevelDFDs-ReportSearchResults.drawio (2).png}
 \end{center}
-\subsection*{Functional Decomposition Diagrams}
 
 \textbf{Process Raw Metrics}
 
@@ -49,6 +49,7 @@ All components will be sending metrics data periodically. This will be in a vari
   \includegraphics[scale=0.5]{DFDs/LowLevelDFDs-ReportMetric.drawio (1).png}
 \end{center}
 
+\newpage
 \textbf{Inspect Evaluation Data}
 
 \medskip
@@ -71,6 +72,7 @@ The other level 1 processes are relatively trivial, however autofill deserves a 
   \includegraphics[scale=0.5]{DFDs/LowLevelDFDs-GetAutofill.drawio (2).png}
 \end{center}
 
+\newpage
 \subsection*{Functional Decomposition Diagram}
 
 This is our FDD:
@@ -110,6 +112,7 @@ These are functions which we will call for other components to take action on.
 
 \textbf{Side Effects:} The stored web-graph will be updated with this information. This is the responsibility of the Link Analysis team.
 
+\newpage
 \subsubsection*{Incoming Calls}
 These are the functions which other components will call for us to take action on.
 
@@ -190,7 +193,7 @@ These are the functions which other components will call for us to take action o
 
 \textbf{Side Effects:} Our component will store all of this data, and call \verb|updateLinkGraph()|to propagate this information to the the web-graph.
 
-\bigskip
+\newpage
 
 \textbf{Function:} \verb|getQueryID():|
 
@@ -269,6 +272,7 @@ These are the functions which other components will call for us to take action o
 
 \textbf{Side Effects:} The feedback is stored for admin viewing.
 
+\newpage
 \subsection*{Design Review}
 
 \subsubsection*{Internal Design Review}
@@ -304,6 +308,7 @@ As a result of our design review, these aspects of our design will be either upd
 \end{enumerate}
 In preparation for our design review with Document Data Store we condensed all data and prepared a couple of questions for them to provide feedback on.
 
+\newpage
 \subsubsection*{Document Data Store Design Review}
 
 \textbf{Date:} November 19, 2024 \\
