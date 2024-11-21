@@ -3,7 +3,13 @@
 bin
 !Code/eval_env/bin
 obj
+*.o
+*.d
 googletest*
+
+### SQLite
+
+*.db
 
 ### Python
 __pycache__
