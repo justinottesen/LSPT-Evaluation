@@ -1,0 +1,110 @@
+\subsection*{Testing Spreadsheet}
+All Tests, related setup, and expected effects are stored in \href{https://docs.google.com/spreadsheets/d/1BoIIdfYPEM98kANtgATMmwdYYAYXyrwbqOqgZ7D_9U4/edit?usp=sharing}{This Spreadsheet}.
+
+\subsection*{Interesting Test Cases}
+
+\textbf{Component Test: AUTO-7}
+\begin{itemize}
+    \item No Associated requirement ID
+    \item Desc: Tests autofill returns correct number of results
+    \item Pre-req: Evaluation Component is running
+    \item Steps: 1. Admin Tool Supplies Query 2. Admin Tool Gets Response
+    \item Expected Output: A list of completed queries not longer than was requested
+    \item Side Effects: None
+\end{itemize}
+
+\smallskip
+
+\textbf{Component Test: AUTO-8}
+\begin{itemize}
+    \item No Associated requirement ID
+    \item Desc: Test autofill returns nothing when given a not safe query
+    \item Pre-req: Evaluation Component is running
+    \item Steps: 1. Admin Tool Supplies not safe Query 2. Admin Tool Gets Response
+    \item Expected Output: An empty list of queries
+    \item Side Effects: None
+\end{itemize}
+
+\smallskip
+
+\textbf{System Test: QID\_MULTI-1}
+\begin{itemize}
+    \item No Associated requirement ID
+    \item Desc: Test getQueryID() being run multiple times
+    \item Pre-req: 1. Evaluation Component is running 2. UI/UX Component has 50 active user
+    \item Steps: 1. UI/UX requests query ID 50 times
+    \item Expected Output: Query ID is sent to UI/UX 50 times
+    \item Side Effects: increment ID counter at least 50 times
+\end{itemize}
+
+\smallskip
+
+\textbf{System Test: QID\_MULTI-3}
+\begin{itemize}
+    \item No Associated requirement ID
+    \item Desc: Test successful return of query data related to multiple queries to Querying 
+    \item Pre-req: 1. Evaluation Component is running 2. Querying knows multiple saved Query IDs 3. Evaluation has multiple queries stored with a Query IDs
+    \item Steps: 1. Querying asks for information linked to multiple stored Query IDs
+    \item Expected Output: requested query Data
+    \item Side Effects: None
+\end{itemize}
+
+\smallskip
+
+\textbf{System Test: UI\_RES-3}
+\begin{itemize}
+    \item No Associated requirement ID
+    \item Desc: Test successful storage of multiple UI/UX results
+    \item Pre-req: 1. Evaluation Component is running 2. UI/UX is showing results to a query to 50 users
+    \item Steps: 1. UI/UX sends 50 query results to Evaluation
+    \item Expected Output: Receives all data from UI/UX
+    \item Side Effects: Store all data in search history
+\end{itemize}
+
+\smallskip
+
+\textbf{System Test: RMET-3}
+\begin{itemize}
+    \item No Associated requirement ID
+    \item Desc: Test recieveMetric() from Querying
+    \item Pre-req: Query establishes a connection with Evaluation
+    \item Steps: 1. Evaluation recieves metric from "Querying"
+    \item Expected Output: None
+    \item Side Effects: Evaluation saves correct report data to log
+\end{itemize}
+
+\smallskip
+
+\textbf{System Test: R\_FEED-1}
+\begin{itemize}
+    \item Associated requirement ID: 58
+    \item Desc: Test successful receive feedback on SE
+    \item Pre-req: 1. Evaluation component is running 2. UI/UX has asn active user
+    \item Steps: 1. UI/UX sends user feedback
+    \item Expected Output: None
+    \item Side Effects: 1. Evaluation saves feedback in file for Admin to look at
+\end{itemize}
+
+\smallskip
+
+\textbf{System Test: R\_FEED-3}
+\begin{itemize}
+    \item Associated requirement ID: 52
+    \item Desc: Test successful receive of right to be forgotten for a specific person
+    \item Pre-req: 1. Evaluation component is running 2. UI/UX has asn active user
+    \item Steps: 1. UI/UX sends right to be forgotten feedback
+    \item Expected Output: None
+    \item Side Effects: 1. Evaluation saves feedback in file for Admin to send to Document Data Store
+\end{itemize}
+
+\subsection*{Sample DataSets}
+
+Our datasets will mainly consist of dummy data that is formatted to match what real data would look like. As we start to receive real data we will phase out the dummy data. We will have 5 different datasets to pull from in order to properly test our component.
+\begin{itemize}
+    \item The First Dataset is the simplest, a list of unique unsigned integers. They will serve as unavailable Query IDs, so that we can test our ID generator. 
+    \item The Second Dataset is a text file filled with simulated feedback jsons. Every json will have a valid category (bug, suggestion, etc.) and will server to test our Feedback reporting function.
+    \item The Third Dataset is a set of simulated metrics from every component that will serve to test both our metric repoting and admin view.
+    \item The Fourth Dataset is made up of simulated user queries and results in list of jsons. They will be used to test interaction reporting and will partially fill our Search Data Store. 
+    \item The Final Dataset is the largest since it will be used to test multiple component functions. A text file containing many simulated sets of queries, IDs, results, clicked results, ignored results, and timestamps. This DataSet, along with the Fourth, will server to test Autofill, query data fetching and Admin View.
+  \end{itemize}
+All of the above DataSets will follow the format laid out by \textbf{Architectural Divisions}.
