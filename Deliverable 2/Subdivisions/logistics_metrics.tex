@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{LSPT Success Metrics}
+\date{November 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Internal Success Metrics:}
+\medskip
+\subsection{Scalability:}
+The evaluation component will measure scalability by monitoring the time it takes
+for a query to run as the number of users using the search engine increases, and 
+also doing another monitor comparing the time it takes for a query to run based on 
+the overall storage of the entire search engine is scaled up. This can be done by 
+simulating the number of users using the search engine and the number of URLs put 
+into the crawler. If the SE seems to run 20-50\% slower as the number of users or 
+storage doubles, then the scalability success metric would be at a higher level. 
+However, if the SE runs 51-99\% slower as the number of users or storage doubles, 
+then the scalability success metric would be at a medium level. Running 100\% 
+slower or more as user or storage doubles would show that scalability is low. 
+
+\smallskip
+
+\subsection{Testability:}
+- The evaluation component can measure testability by monitoring the total test 
+coverage and the success rate of the tests. If there is 91 to 100\% test coverage, 
+as well as passing all functional requirements and edge cases, then the 
+testability of the code is high level and is considered successful. However, if 
+the code does not pass at least 3 of the requirements, or if there is a lower test 
+coverage percent, such as 70-90\%, then the testability success metric would be 
+considered at a medium level. If the code does not pass more than 3, or if there 
+is a lower than 70\% test coverage, then the testability success metric would be 
+at a low level.
+
+\smallskip
+
+\subsection{Usability:}
+The evaluation component can measure the overall usability of the SE based on the 
+usage of the feedback we receive from UI/UX. If UI/UX sends negative feedback(such 
+as: “This Search Engine is too slow!”) or bug reports at a rate of less than 1\% 
+of the queries searched, this would suggest that there is a relatively high 
+usability score. If negative feedback or bug reports are between 1-5\% of the 
+queries searched, then it would be considered at a medium level With negative 
+feedback suggestions or bug reports that are greater than 5\% of the queries, the 
+usability success metric would be low.
+
+\bigskip
+
+\section{External Success Metric:}
+
+\medskip
+
+\subsection{Predictability:}
+
+The evaluation component can measure predictability by measuring how often the 
+autofill function is called before a query ID is generated. If there are only 1-2 
+calls for the API getAutofill before the API call for getQueryID, then this would 
+suggest that a good autofill result was presented. However, if there are 3-5 API 
+calls for getAutofill before the API call for getQueryID, then the user likely was 
+not satisfied with the autofill results and had to keep typing before finally 
+getting a result, suggesting a medium predictability success metric. If there are 
+more than 5 API calls for getAutofill before the API call for getQueryID, then the 
+predictability success metric would be low.
+
+\smallskip
+
+\subsection{Performance:}
+Since the evaluation component sends out the query ID and receives the query ID at 
+the end of the query runtime, it can conduct performance tests on the overall 
+performance of the query runtime. If the time to run the query is less than 1 
+second(what was mentioned in the requirements), then this suggests that the 
+performance metric is successful or the performance metric is at a high level. The 
+query running between 1 second and 2 seconds would suggest a medium-performance 
+metric. The query running for a runtime longer than 2 seconds would be considered 
+to have a low-performance metric. 
+
+\smallskip
+
+\subsection{Relevancy:}
+Regarding the relevancy success metric, this refers to the link on which the user 
+clicks. If the user clicks on the first few links, the search results are 
+considered relevant and would have a high score. However, if the user clicks on a 
+later link, or even goes to the next page, then the search results would be 
+considered irrelevant, and therefore, would not be considered as successful. We 
+can measure this based on the average position of the clicked link. If the average 
+position of the clicked link is between the first three clicked links, then it 
+would be considered a high relevancy score. If the average position of the link 
+clicked is between the 4th and 6th positions, then it would be considered a medium 
+relevancy score. Finally, if the average relevancy score was lower than the 6th 
+position, then the relevant successful metric would be at a low level.
+
+\end{document}
