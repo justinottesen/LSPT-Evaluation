@@ -95,4 +95,12 @@ reset:
 format:
 	clang-format src/* -i
 
+.PHONY: tidy
+tidy:
+	clang-tidy src/*.cpp
+
+.PHONY: tidy-fix
+tidy-fix:
+	clang-tidy src/*.cpp --fix
+
 -include $(DEPENDS)

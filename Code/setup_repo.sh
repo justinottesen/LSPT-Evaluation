@@ -17,6 +17,18 @@ if [ "${1-}" != "no-install-checks" ]; then
     exit 1
   fi
 
+  echo "> Ensuring clang-format is installed ..."
+  if ! clang-format --version > /dev/null 2>&1; then
+    echo "clang-format is not installed."
+    exit 1
+  fi
+
+  echo "> Ensuring clang-tidy is installed ..."
+  if ! clang-tidy --version > /dev/null 2>&1; then
+    echo "clang-tidy is not installed."
+    exit 1
+  fi
+
   echo "> Ensuring make is installed ..."
   if ! make --version > /dev/null 2>&1; then
     echo "make is not installed."
