@@ -1,11 +1,10 @@
-### C++ & GoogleTest
+### C++
 
 bin
 !Code/eval_env/bin
 obj
 *.o
 *.d
-googletest*
 
 ### SQLite
 
@@ -13,6 +12,10 @@ googletest*
 
 ### Python
 __pycache__
+
+### Dependencies
+googletest/
+sqlite/
 
 ### LATEX
 

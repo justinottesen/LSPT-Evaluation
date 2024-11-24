@@ -34,6 +34,12 @@ if [ "${1-}" != "no-install-checks" ]; then
     echo "pytest is not installed."
     exit 1
   fi
+
+  echo "> Ensuring unzip is installed ..."
+  if ! which unzip > /dev/null 2>&1; then
+    echo "unzip is not installed."
+    exit 1
+  fi
 fi
 
 echo "> Ensuring GoogleTest libraries & headers are available ..."
@@ -63,6 +69,16 @@ fi
 
 echo "> Ensuring sqlite3.o exists ..."
 if [ ! -f "$REPO_DIR/sqlite/sqlite3.o" ]; then
+  mkdir -p "$REPO_DIR/sqlite"
+
+  if [ ! -f "$REPO_DIR/sqlite/download.zip" ]; then
+    echo " > Downloading SQLite source files"
+    curl -L https://www.sqlite.org/2024/sqlite-amalgamation-3470000.zip > sqlite/download.zip 2> /dev/null
+  fi
+  if [ ! -f "$REPO_DIR/sqlite/sqlite3.c" ]; then
+    echo " > Unzipping SQLite download"
+    unzip -j sqlite/download.zip -d sqlite > /dev/null 2>&1
+  fi
   echo "  > Compiling sqlite3.c -> sqlite3.o"
   clang -o sqlite/sqlite3.o sqlite/sqlite3.c -c
 fi
