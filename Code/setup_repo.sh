@@ -57,14 +57,14 @@ done
 if $MISSING; then
   if [ ! -d "$REPO_DIR/googletest" ]; then
     echo "  > Cloning GoogleTest repository ..."
-    git clone https://github.com/google/googletest.git googletest -b v1.15.2 > /dev/null 2>&1
+    git clone https://github.com/google/googletest.git googletest -b v1.15.2 > /dev/null
   fi
   if [ ! -f "$REPO_DIR/googletest/build/Makefile" ]; then
     echo "  > Building GoogleTest ..."
-    cmake -S "$REPO_DIR/googletest" -B "$REPO_DIR/googletest/build" > /dev/null 2>&1
+    cmake -S "$REPO_DIR/googletest" -B "$REPO_DIR/googletest/build" > /dev/null
   fi
   echo "  > Compiling library binaries"
-  make -C "$REPO_DIR/googletest/build" > /dev/null 2>&1
+  make -C "$REPO_DIR/googletest/build" > /dev/null
 fi
 
 echo "> Ensuring sqlite3.o exists ..."
@@ -73,19 +73,19 @@ if [ ! -f "$REPO_DIR/sqlite/sqlite3.o" ]; then
 
   if [ ! -f "$REPO_DIR/sqlite/download.zip" ]; then
     echo "  > Downloading SQLite source files"
-    curl -L https://www.sqlite.org/2024/sqlite-amalgamation-3470000.zip > sqlite/download.zip 2>&1
+    curl -L https://www.sqlite.org/2024/sqlite-amalgamation-3470000.zip > sqlite/download.zip
   fi
   if [ ! -f "$REPO_DIR/sqlite/sqlite3.c" ]; then
     echo "  > Unzipping SQLite download"
-    unzip -j sqlite/download.zip -d sqlite > /dev/null 2>&1
+    unzip -j sqlite/download.zip -d sqlite > /dev/null
   fi
   echo "  > Compiling sqlite3.c -> sqlite3.o"
-  clang -o sqlite/sqlite3.o sqlite/sqlite3.c -c > /dev/null 2>&1
+  clang -o sqlite/sqlite3.o sqlite/sqlite3.c -c > /dev/null
 fi
 
 echo "> Ensuring nlohmann JSON is available ..."
 if [ ! -f "$REPO_DIR/nlohmann_json/single_include/nlohmann/json.hpp" ]; then
-  git clone https://github.com/nlohmann/json.git nlohmann_json -b v3.11.3 > /dev/null 2>&1
+  git clone https://github.com/nlohmann/json.git nlohmann_json -b v3.11.3 > /dev/null
 fi
 
 echo Setup Complete!
