@@ -1,63 +1,70 @@
-#include <iostream> 
 #include <sqlite3.h>
 
+#include <exception>
+#include <iomanip>
+#include <iostream>
 #include <nlohmann/json.hpp>
+#include <numbers>
 
 using namespace std;
 using json = nlohmann::json;
-  
-int main() 
-{ 
+
+int main() {
+  try {
     // Pointer to SQLite connection
-    sqlite3* db; 
-    
+    sqlite3* database = nullptr;
+
     // Save the connection result
     int exit = 0;
-    exit = sqlite3_open("example.db", &db); 
-  
-    // Test if there was an error
-    if (exit) { 
-        
-        cout << "DB Open Error: " << sqlite3_errmsg(db) << endl; 
-        
-    } else {
+    exit     = sqlite3_open("example.db", &database);
 
-        cout << "Opened Database Successfully!" << endl; 
+    // Test if there was an error
+    if (exit != 0) {
+      cout << "DB Open Error: " << sqlite3_errmsg(database) << '\n';
+
+    } else {
+      cout << "Opened Database Successfully!" << '\n';
     }
-    
+
     // Close the connection
-    sqlite3_close(db); 
+    sqlite3_close(database);
 
     // create a JSON object
-    json j =
+    // clang-format off
+    json json_example =
     {
-        {"pi", 3.141},
-        {"happy", true},
-        {"name", "Niels"},
-        {"nothing", nullptr},
-        {
-            "answer", {
-                {"everything", 42}
-            }
-        },
-        {"list", {1, 0, 2}},
-        {
-            "object", {
-                {"currency", "USD"},
-                {"value", 42.99}
-            }
+      {"pi", std::numbers::pi},
+      {"happy", true},
+      {"name", "Niels"},
+      {"nothing", nullptr},
+      {
+        "answer", {
+          {"everything", 42} // NOLINT(*magic-numbers)
         }
+      },
+      {"list", {1, 0, 2}},
+      {
+        "object", {
+          {"currency", "USD"},
+          {"value", 42.99} // NOLINT(*magic-numbers)
+        }
+      }
     };
+    // clang-format on
 
     // add new values
-    j["new"]["key"]["value"] = {"another", "list"};
+    json_example["new"]["key"]["value"] = {"another", "list"};
 
     // count elements
-    auto s = j.size();
-    j["size"] = s;
+    auto json_size       = json_example.size();
+    json_example["size"] = json_size;
 
     // pretty print with indent of 4 spaces
-    std::cout << std::setw(4) << j << '\n';
-    
-    return (0); 
-} 
+    std::cout << std::setw(4) << json_example << '\n';
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+    return 1;
+  }
+
+  return 0;
+}
