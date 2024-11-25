@@ -13,6 +13,6 @@ Checks: 'bugprone-*,
 CheckOptions:
   - key: lang.std
     value: 'c++20'
-
-HeaderFilterRegex: '.*'
+ExtraArgs: [ '-Isqlite', '-Inlohmann_json/single_include' ]
+HeaderFilterRegex: '^(?!sqlite|nlohmann_json/single_include).*$'
 WarningsAsErrors: '*'
