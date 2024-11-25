@@ -13,7 +13,7 @@ CFLAGS =
 # C++ flags
 CXXFLAGS = -std=c++20
 # C/C++ flags
-CPPFLAGS = -Wall -Wextra -Werror -I../sqlite
+CPPFLAGS = -Wall -Wextra -Werror -I../sqlite -I../nlohmann_json/single_include
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags
@@ -94,5 +94,13 @@ reset:
 .PHONY: format
 format:
 	clang-format src/* -i
+
+.PHONY: tidy
+tidy:
+	clang-tidy src/*.cpp
+
+.PHONY: tidy-fix
+tidy-fix:
+	clang-tidy src/*.cpp --fix
 
 -include $(DEPENDS)

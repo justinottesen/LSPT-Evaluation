@@ -17,6 +17,18 @@ if [ "${1-}" != "no-install-checks" ]; then
     exit 1
   fi
 
+  echo "> Ensuring clang-format is installed ..."
+  if ! clang-format --version > /dev/null 2>&1; then
+    echo "clang-format is not installed."
+    exit 1
+  fi
+
+  echo "> Ensuring clang-tidy is installed ..."
+  if ! clang-tidy --version > /dev/null 2>&1; then
+    echo "clang-tidy is not installed."
+    exit 1
+  fi
+
   echo "> Ensuring make is installed ..."
   if ! make --version > /dev/null 2>&1; then
     echo "make is not installed."
@@ -32,6 +44,12 @@ if [ "${1-}" != "no-install-checks" ]; then
   echo "> Ensuring pytest is installed ..."
   if ! pytest --version > /dev/null 2>&1; then
     echo "pytest is not installed."
+    exit 1
+  fi
+
+  echo "> Ensuring unzip is installed ..."
+  if ! which unzip > /dev/null 2>&1; then
+    echo "unzip is not installed."
     exit 1
   fi
 fi
@@ -51,20 +69,35 @@ done
 if $MISSING; then
   if [ ! -d "$REPO_DIR/googletest" ]; then
     echo "  > Cloning GoogleTest repository ..."
-    git clone https://github.com/google/googletest.git googletest -b v1.15.2 > /dev/null 2>&1
+    git clone https://github.com/google/googletest.git googletest -b v1.15.2 > /dev/null
   fi
   if [ ! -f "$REPO_DIR/googletest/build/Makefile" ]; then
     echo "  > Building GoogleTest ..."
-    cmake -S "$REPO_DIR/googletest" -B "$REPO_DIR/googletest/build" > /dev/null 2>&1
+    cmake -S "$REPO_DIR/googletest" -B "$REPO_DIR/googletest/build" > /dev/null
   fi
   echo "  > Compiling library binaries"
-  make -C "$REPO_DIR/googletest/build" > /dev/null 2>&1
+  make -C "$REPO_DIR/googletest/build" > /dev/null
 fi
 
 echo "> Ensuring sqlite3.o exists ..."
 if [ ! -f "$REPO_DIR/sqlite/sqlite3.o" ]; then
+  mkdir -p "$REPO_DIR/sqlite"
+
+  if [ ! -f "$REPO_DIR/sqlite/download.zip" ]; then
+    echo "  > Downloading SQLite source files"
+    curl -L https://www.sqlite.org/2024/sqlite-amalgamation-3470000.zip > sqlite/download.zip
+  fi
+  if [ ! -f "$REPO_DIR/sqlite/sqlite3.c" ]; then
+    echo "  > Unzipping SQLite download"
+    unzip -j sqlite/download.zip -d sqlite > /dev/null
+  fi
   echo "  > Compiling sqlite3.c -> sqlite3.o"
-  clang -o sqlite/sqlite3.o sqlite/sqlite3.c -c
+  clang -o sqlite/sqlite3.o sqlite/sqlite3.c -c > /dev/null
+fi
+
+echo "> Ensuring nlohmann JSON is available ..."
+if [ ! -f "$REPO_DIR/nlohmann_json/single_include/nlohmann/json.hpp" ]; then
+  git clone https://github.com/nlohmann/json.git nlohmann_json -b v3.11.3 > /dev/null
 fi
 
 echo Setup Complete!
