@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Tests & Checks
 
 on:
   push:
@@ -7,6 +7,22 @@ on:
     branches: [ "master" ]
 
 jobs:
+  run_clang_tidy:
+    name: Run clang-tidy on the repository
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Run Setup Script
+      run: ./setup_repo.sh no-install-checks
+      working-directory: Code
+
+    - name: Run clang-tidy on evaluation
+      run: make tidy
+      working-directory: Code/evaluation
+
   run_unit_tests:
     name: Build & Run Unit Tests
     runs-on: ubuntu-latest
