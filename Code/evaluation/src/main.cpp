@@ -71,10 +71,8 @@ void handle_client(int client_sock) {
     // Read the headers
     std::unordered_map<std::string, std::string> headers;
     while (std::getline(stream, line)) {
-      std::cout << "-> " << line << " - " << line.length() << "\n";
       std::size_t delim_pos = line.find(':');
       if (delim_pos == std::string::npos) {
-        std::cout << "-> End of headers reached\n";
         break;    // Reached the end of the headers
       }
 
