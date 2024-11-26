@@ -13,7 +13,7 @@ CFLAGS =
 # C++ flags
 CXXFLAGS = -std=c++20
 # C/C++ flags
-CPPFLAGS = -Wall -Wextra -Werror -I../sqlite -I../nlohmann_json/single_include
+CPPFLAGS = -Wall -Wextra -Werror -Wno-unused-variable -I../sqlite -I../nlohmann_json/single_include
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags
