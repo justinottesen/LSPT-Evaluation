@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+cd $(dirname $0)
+
 REPO_DIR="$(pwd)"
 
 if [ "${1-}" != "no-install-checks" ]; then
