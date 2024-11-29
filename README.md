@@ -16,51 +16,17 @@ Hello other teams! This section is for you guys. Please reach out to us with pro
 
 Before describing the specific messages & formats we will support, here are some rules that apply to all messaging we will be involved in:
 
-- **UDP Sockets**: All communication with our component will be through UDP socket communication. We will listen on one or more (TBD) sockets for messages, and will respond using UDP sockets. *If this is a significant problem for your component, discuss this with us, and we can try to work something else out*.
-> TCP will be slow, I don't think UDP will be a problem for our case, especially because we are all running within the same network.
-- **JSON**: All interactions will be done using JSON. This is for uniformity and ease of communication. There is one exception to this, the first 4 bytes will always be the length of the message (**NOT including this four byte length encoding**).
-- **Error Handling**: For the beta release, very minimal error handling will be implemented. If we receive a badly formatted message, we will ignore it. We will not respond with "success" or "failure" messages. This may result in the loss of some metrics or search data, however it will significantly reduce both ther server and developer load. If you send us a message and don't receive a response when expecting one, you will have to retry sending the message.
-> Not too sure if we want to not respond. Some data loss in our case is fine, and other teams probably wouldn't even be able to fix errors on the fly. Only problem here is if they are sending to the wrong socket or something. 
->
->Maybe we have separate `DEBUG` and `RELEASE` modes which respond? Or we could expand the idea of using `evaltool` as a proxy (see my note right above [Specific API Calls](#specific-api-calls)). The evaltool route is probably easier and better, that way we don't have to recompile when someone has a problem
-
-As mentioned above, all communication will be done in JSON (with the exception of the length encoding). Below there are several examples listed of what JSON format we will be accepting. Each of these must be wrapped in the following JSON:
-
-```
-{
-  "component": <Your Component Name>,
-  "function": <The API "function" name you are calling>,
-  "version": <The version of the API "function" that you are using>,
-  "message": <The message contents as a JSON object>
-}
-```
-
-Some more detail about each field:
-- **component**: The name of your component. We will expect one of the following:
-  - `"Crawling"`
-  - `"Ranking"`
-  - `"Querying"`
-  - `"Doc Data Store"`
-  - `"Text Transform"`
-  - `"Link Analysis"`
-  - `"Indexing"`
-  - `"UI/UX"`
-  - `"Evaluation"`
-- **function**: The name of the "function" you are calling. This will be from the table found below in the [Specific API Calls](#specific-api-calls) section.
-- **version**: We hope to not have to, but we may have to change the expected interface. If this happens, we will update the version number. To reduce impact on other groups, we will attempt to support current as well as previous versions, however we may not be able to for various reasons. The table in [Specific API Calls](#specific-api-calls) shows the **Current API Version** we support, as well as the **Minimum Supported Version** you may use.
-- **message**: The message is the JSON object for the API "function" you are calling. These formats are described below in [Specific API Calls](#specific-api-calls).
+- **HTTP Requests**: All communication with our component will be through HTTP. We will listen on one socket for requests. We will be using HTTP version 1.1
+- **JSON**: All interactions will be done using JSON. This is for uniformity and ease of communication. So, every request body we receive should be in JSON format.
+- **Error Handling**: For the beta release, very minimal error handling will be implemented. If we receive a badly formatted message, we will try to give a helpful message, however this is not a priority. If something goes wrong, read this file and if you still have problems, reach out to us.
 
 We will be logging information with every received message to help facilitate debugging of messaging. If something is not working as you expect, please contact us on Discord, we can help troubleshoot.
 
-> It may be worth implementing a feature in `evaltool` which simply receives and prints the received message (and maybe whether it is in compliance with our expectations).
->
-> For example, command is `./evaltool.py proxy -p 9999 -f 8888` and it runs as a "proxy" evaluation component on port 9999 that just prints what it receives (and maybe forwards the message to 8888 where the actual evaluation component is running).
->
-> In my experience, networking components together is one of the most annoying parts of a project like this, especially when everything is in different languages. This could be a very low effort way to significantly help with testing and debugging, and conclusively say who is the one messing up the interface.
+If time permits, we will also implement an HTTP proxy to intercept, display, and relay requests to help with debugging. Check `Code/evaltool/README.md` for more information on this.
 
 ### Specific API Calls
 
-Below is the description of all interactions we will support. Remember that each of these JSON objects will need to be wrapped in a JSON object matching the above specification.
+Below is the description of all interactions we will support.
 
 | API Function Name                           | Expected Callers | Purpose                                           | Current API Version | Minimum Supported Version |
 |---------------------------------------------|------------------|---------------------------------------------------|---------------------|---------------------------|
@@ -71,33 +37,32 @@ Below is the description of all interactions we will support. Remember that each
 | [GetQueryData](#getquerydata)               | Ranking          | Request the interaction data for a query          | 0                   | 0                         |
 | [ReportMetrics](#reportmetrics)             | All Components   | Report performance data                           | 0                   | 0                         |
 
-> Am I missing anything? We don't have to specify what we are calling of other teams here, that is their problem.
-
 Below is more information on the above API calls. Only documentation for the most recent version is shown. If you need help with an older version, which we hope you will not, please reach out to us (or check the commit history). If we no longer support the version, you are out of luck, and must upgrade.
+
+To access an API call of a specific version, prepend `/v#/` to the resource path, where `#` is the version number. Examples are shown below.
 
 #### GetAutofill
 
 Request Format:
-
-``` 
-{
-  "num_suggestions": <Number of suggestions requested>,
-  "partial_query": <The query which will be autofilled>
-}
+```
+GET /v0/GetAutofill HTTP/1.1
+Num-Suggestions: <The number of suggestions you want>
+Partial-Query: <The query you would like to complete>
 ```
 
-- **num_suggestions**: The maximum number of suggestions you would like in response. We may respond with any number of autofill suggestions less than or equal to this.
-- **partial_query**: The partial query you would like autofill responses to. This may also be an empty string, if just the top suggestions are wanted.
+- **Num-Suggestions**: The maximum number of suggestions you would like in response. We may respond with any number of autofill suggestions less than or equal to this.
+- **Partial-Query**: The partial query you would like autofill responses to. This may also be an empty string, if just the top suggestions are wanted.
 
 Response Format:
 ```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: <Length of JSON body below>
+
 {
   "suggestions": [ <A list of suggestions for the complete query> ]
 }
 ```
-> We do not need to include the number of suggestions we are sending, that is inferred by the size of the list
-
-> Should we wrap responses with the same JSON we expect as well? That probably makes the most sense
 
 Side Effects:
 
@@ -107,19 +72,20 @@ None
 
 Request Format:
 ```
-{}
+GET /v0/GetQueryID HTTP/1.1
 ```
-All necessary information is in the wrapper JSON
 
 Response Format:
 ```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: <Length of JSON body below>
+
 {
   "query_ID": <Unique identifier of the query>
 }
 ```
 - **query_ID**: A number, which is guaranteed to be unique between all calls of this function, even if the Evaluation component crashes.
-
-> Number? Hash? String? Defaulting to just a monotonically increasing number. 0, 1, 2, 3, etc...
 
 Side Effects:
 
@@ -129,6 +95,10 @@ This query ID will never again be returned by `GetQueryID`.
 
 Request Format:
 ```
+POST /v0/ReportSearchResults HTTP/1.1
+Content-Type: application/json
+Content-Length: <Length of JSON body below>
+
 {
   "query_ID": <Unique identifier of the query>
   "raw_query": <The exact query the user entered>,
@@ -140,16 +110,14 @@ Request Format:
 - **query_ID**: Unique identifier of the query, **which must be generated by a previous call of `GetQueryID`**. This will not be checked, however the query will not be stored if there is a conflict.
 - **raw_query**: This should be what the user types in the search bar, with the exception of a "did you mean", in which case the corrected query should be used. This is ultimately up to the UI team's discretion, as it will be used as the dataset that informs autofill.
 - **results**: A list of the results shown to the user, in order of their display. This can be used to infer which links were clicked, and which were ignored.
-> How does webgraph deal with this? Maybe their list is the links the user "previews" by clicking the node without actually following the link. This gets weird if they are re-querying and doing new subgraphs somehow
-
-> Are results just links? Is this JSON of label, link, snippet, etc? This depends on what UI wants. Maybe v0 is just link, future versions have more? Could be hard to change this with our database
 - **clicked**: This is the result that the user ultimately selected
 - **query_timestamp**: The timestamp associated with the query
-> Why do we need this again?
 
 Response Format:
 
-No response is sent.
+```
+HTTP/1.1 200 OK
+```
 
 Side Effects:
 
@@ -159,6 +127,10 @@ The search results and interactions will be stored. Various information will be 
 
 Request Format:
 ```
+POST /v0/SubmitFeedback HTTP/1.1
+Content-Type: application/json
+Content-Length: <Length of JSON body below>
+
 {
   "label": <Some Label for the feedback>,
   "title": <Some title for the feedback>,
@@ -172,7 +144,9 @@ We are flexible on this, and expect this method to be used for bug reports, righ
 
 Response Format:
 
-No response is sent.
+```
+HTTP/1.1 200 OK
+```
 
 Side Effects:
 
@@ -182,14 +156,16 @@ The feedback is stored for admin viewing.
 
 Request Format:
 ```
-{
-  "query_IDs": [ <List of unique identifiers of queries> ]
-}
+GET /v0/GetQueryData HTTP/1.1
+Query-ID: <Query ID of interest>
 ```
-- **query_IDs**: A list of query IDs for which we will get the interaction info. If only one is needed, just supply one query ID in the list.
 
 Response Format:
 ```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: <Length of JSON body below>
+
 {
   "queries": [
     {
@@ -201,11 +177,8 @@ Response Format:
   ]
 }
 ```
-> Should we add timestamp? Should we add the raw query?
-
 - **query_ID**: The unique identifier associated with the query. These are taken from the input. If unable to find a query with the ID provided, it will not be included in the **queries** list
 - **results**: The list of results which were displayed to the user.
-> See above question about results
 - **clicked**: This is the result that the user ultimately selected
 
 Side Effects:
@@ -216,6 +189,11 @@ None
 
 Request Format:
 ```
+POST /v0/ReportMetrics HTTP/1.1
+Component: <Agreed upon identifier for your component & Team>
+Content-Type: application/json
+Content-Length: <Length of JSON body below>
+
 {
   "metrics": [
     {
@@ -230,9 +208,13 @@ We are accepting a list so that metrics can be grouped together and batched, whi
 - **label**: The label for the metric. We will establish with other teams what metrics we would like to record, so this label will need to be an agreed upon string identifier.
 - **value**: Again, this will depend on the metric itself. It may be a number, a list, a JSON object, or some other value.
 
+The `Component` header value should be your component and team name.
+
 Response Format:
 
-No response is sent.
+```
+HTTP/1.1 200 OK
+```
 
 Side Effects:
 
@@ -270,9 +252,6 @@ The search history will be stored as a list of user queries, and the associated 
 - **Results**: The list of results which were shown to the user as a result of this query
 - **Clicked**: Which result the user chose
 - **Timestamp**: A timestamp associated with the query
-> Timestamp: When the query started? when it ended? Why do we even need this? I think it is for link analysis webgraph, we don't have to store it, we can just send it to them.
->
-> Counterargument: We can use this to see how frequently queries occur and how much load is on the search engine
 
 This will be split among various SQLite tables. The exact structure is to be determined.
 
@@ -288,9 +267,7 @@ Also TBD but maybe just dump into files or something, does not have to be fancy.
 
 Everything the evaluation component does will be started by the receive of a message on a socket. We will have a pool of threads, which wait to be assigned to an incoming request.
 
-> Do we want one port per message type? One port, a threadpool to handle all requests? One thread per request type? Does it even matter if we only have one core and are sharing with DDS?
 
-> How many threads? If the machine has only one core, and we are sharing with another team, how are we gonna do this?
 
 When an incoming request is received, we will parse the wrapper JSON to see what needs to be done with the inner JSON. The correct function will be called to handle the inner JSON, propagating the necessary information from the outer JSON.
 
