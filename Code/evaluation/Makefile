@@ -13,7 +13,7 @@ CFLAGS =
 # C++ flags
 CXXFLAGS = -std=c++20
 # C/C++ flags
-CPPFLAGS = -Wall -Wextra -Werror -I../sqlite -I../nlohmann_json/single_include
+CPPFLAGS = -Wall -Wextra -Werror -g -I../sqlite -I../nlohmann_json/single_include
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags
@@ -32,7 +32,8 @@ SOURCES := $(wildcard $(SRC)/*.c $(SRC)/*.cc $(SRC)/*.cpp $(SRC)/*.cxx ../sqlite
 
 OBJECTS := \
 	$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(wildcard $(SRC)/*.c)) \
-	$(patsubst $(SRC)/%.cpp, $(OBJ)/%.o, $(wildcard $(SRC)/*.cpp))
+	$(patsubst $(SRC)/%.cpp, $(OBJ)/%.o, $(wildcard $(SRC)/*.cpp)) \
+	../sqlite/sqlite3.o
 
 # include compiler-generated dependency rules
 DEPENDS := $(OBJECTS:.o=.d)
@@ -50,7 +51,7 @@ LINK.o = $(LD) $(LDFLAGS) $(LDLIBS) $(OBJECTS) -o $@
 all: $(BIN)/$(EXE)
 
 $(BIN)/$(EXE): $(SRC) $(OBJ) $(BIN) $(OBJECTS)
-	$(LINK.o) ../sqlite/sqlite3.o
+	$(LINK.o)
 
 $(SRC):
 	mkdir -p $(SRC)

@@ -1,15 +1,19 @@
 #include <sqlite3.h>
 
 #include <exception>
-#include <iomanip>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <numbers>
+
+#include "Logger.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 int main() {
+  Logger::addConsole();
+  // Logger::addFile("log/info.log");
+  // Logger::addFile("log/trace.log", TRACE);
+
   try {
     // Pointer to SQLite connection
     sqlite3* database = nullptr;
@@ -20,13 +24,14 @@ int main() {
 
     // Test if there was an error
     if (exit != 0) {
-      cout << "DB Open Error: " << sqlite3_errmsg(database) << '\n';
+      LOG(ERROR) << "DB Open Error: " << sqlite3_errmsg(database);
 
     } else {
-      cout << "Opened Database Successfully!" << '\n';
+      LOG(INFO) << "Opened Database Successfully!";
     }
 
     // Close the connection
+    LOG(DEBUG) << "Closing database";
     sqlite3_close(database);
 
     // create a JSON object
@@ -60,11 +65,17 @@ int main() {
     json_example["size"] = json_size;
 
     // pretty print with indent of 4 spaces
-    std::cout << std::setw(4) << json_example << '\n';
+    LOG(INFO) << json_example;
   } catch (const std::exception& e) {
-    std::cerr << e.what() << '\n';
+    LOG(CRITICAL) << e.what();
     return 1;
   }
 
+  LOG(CRITICAL) << "Not actually critical just testing colors";
+
+  LOG(INFO) << "Trying with\nmultiple lines";
+
+  // Empty log message
+  LOG(INFO);
   return 0;
 }

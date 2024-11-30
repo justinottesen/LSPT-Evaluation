@@ -5,8 +5,8 @@
 ### C++
 
 bin
-!Code/eval_env/bin
 obj
+log
 *.o
 *.d
 

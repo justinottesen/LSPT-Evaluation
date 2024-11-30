@@ -1,27 +1,42 @@
-TESTS = test_example
+EVAL_SRC =../evaluation/src
+
+BIN = bin
+
+TESTS = test_example test_logger
+
+EXECUTABLES = $(addprefix $(BIN) /, $(TESTS))
+
+test_example_SOURCES = test_example.cpp
+
+test_logger_SOURCES = test_logger.cpp $(EVAL_SRC)/Logger.cpp $(EVAL_SRC)/TimeUtil.cpp
 
 CXX = clang++
-
-CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -g
-LDFLAGS = -L../googletest/build/lib
+LD = clang++
+CXXFLAGS = -std=c++20
+CPPFLAGS = -Wall -Wextra -Werror -g
+INCLUDES = -I../sqlite -I../nlohmann_json/single_include -I../evaluation/src -I../googletest/googletest/include -I../googletest/googlemock/include
 LDLIBS = -lgtest_main -lgtest
+LDFLAGS = -L../googletest/build/lib
 
-all: $(TESTS)
+COMPILE_CMD = $(CXX) $(CXXFLAGS) $(INCLUDES) $(LDLIBS) $(LDFLAGS) -o $@
 
-run: bin/$(TESTS)
-	./bin/$(TESTS)
+.PHONY: all
+all : bin/test_example bin/test_logger
 
-clean:
-	rm -rf bin obj
+.PHONY : run
+run : bin/test_example bin/test_logger
+	bin/test_example
+	bin/test_logger
 
-bin:
-	mkdir -p bin
+$(BIN)/test_logger: $(test_logger_SOURCES) 
+	mkdir -p $(BIN)
+	$(COMPILE_CMD) $(test_logger_SOURCES)
 
-obj:
-	mkdir -p obj
+$(BIN)/test_example : $(test_example_SOURCES)
+	mkdir -p $(BIN)
+	$(COMPILE_CMD) $(test_example_SOURCES)
 
-test_example.o: test_example.cpp obj
-	$(CXX) $(CXXFLAGS) -I../googletest/googletest/include -c test_example.cpp -o obj/$@
+.PHONY : clean
+clean : 
+	$(RM) -r $(BIN)
 
-test_example: test_example.o bin
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LDLIBS) obj/$< -o bin/$@
