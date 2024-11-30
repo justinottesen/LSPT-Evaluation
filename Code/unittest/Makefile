@@ -45,3 +45,6 @@ $(BIN)/test_tcp : $(test_tcp_SOURCES)
 clean : 
 	$(RM) -r $(BIN)
 
+.PHONY: format
+format:
+	clang-format *.cpp -i

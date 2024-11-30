@@ -3,12 +3,15 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
 #include <optional>
+#include <string>
+#include <string_view>
 
 #include "Logger.h"
 #include "Util.h"
@@ -29,9 +32,8 @@ bool TCPSocket::create() {
   if (m_socket == -1) {
     LOG(WARN) << "Unable to open socket: " << my_strerror(errno);
     return false;
-  } else {
-    LOG(TRACE) << "Opened socket fd: " << m_socket;
   }
+  LOG(TRACE) << "Opened socket fd: " << m_socket;
 
 #ifdef REUSEADDR
   int opt = 1;
@@ -72,11 +74,11 @@ bool TCPSocket::close() {
   return ret == 0;
 }
 
-unsigned int TCPSocket::send(std::string_view msg, bool full_msg) {
+unsigned int TCPSocket::send(std::string_view msg, bool full_msg) const {
   LOG(DEBUG) << "Sending message " << msg;
   unsigned int sent = 0;
   do {
-    ssize_t n = ::send(m_socket, msg.data() + sent, msg.length() - sent, 0);
+    const ssize_t n = ::send(m_socket, msg.data() + sent, msg.length() - sent, 0);
     if (n == -1) {
       LOG(WARN) << "Send Failed: " << my_strerror(errno);
       break;
@@ -87,14 +89,12 @@ unsigned int TCPSocket::send(std::string_view msg, bool full_msg) {
   return sent;
 }
 
-std::string TCPSocket::recv() {
+std::string TCPSocket::recv() const {
   std::string buf;
   buf.resize(RECV_BUFFER_SIZE);
   LOG(INFO) << "BUF SIZE " << buf.capacity();
-  ssize_t n = ::recv(m_socket, buf.data(), buf.size() - 1, 0);
-  if (n == -1) {
-    LOG(WARN) << "Recv failed: " << my_strerror(errno);
-  }
+  const ssize_t n = ::recv(m_socket, buf.data(), buf.size() - 1, 0);
+  if (n == -1) { LOG(WARN) << "Recv failed: " << my_strerror(errno); }
   buf.resize(n);
   LOG(DEBUG) << "Received " << n << " bytes (" << buf << ")";
   return buf;
@@ -128,14 +128,13 @@ bool TCPSocket::bind(uint16_t port) const {
     LOG(WARN) << "Unable to bind socket (fd: " << m_socket << ") on port " << port << ": "
               << my_strerror(errno);
     return false;
-  } else {
-    LOG(DEBUG) << "Bound socket (fd: " << m_socket << ") to port " << port;
-#ifdef REUSEADDR
-    LOG(DEBUG) << "REUSEADDR defined, adding port (" << port << ") to in use";
-    ports_in_use.emplace(port);
-#endif
-    return true;
   }
+  LOG(DEBUG) << "Bound socket (fd: " << m_socket << ") to port " << port;
+#ifdef REUSEADDR
+  LOG(DEBUG) << "REUSEADDR defined, adding port (" << port << ") to in use";
+  ports_in_use.emplace(port);
+#endif
+  return true;
 }
 
 bool TCPSocket::listen(int backlog) const {
@@ -167,10 +166,9 @@ std::optional<TCPSocket> TCPSocket::accept() const {
   if (ret < 0) {
     LOG(WARN) << "Accept (fd: " << m_socket << ") failed: " << my_strerror(errno);
     return std::nullopt;
-  } else {
-    LOG(DEBUG) << "Socket (fd: " << m_socket << ") accepted connection (new fd: " << ret << ")";
-    return TCPSocket(ret);
   }
+  LOG(DEBUG) << "Socket (fd: " << m_socket << ") accepted connection (new fd: " << ret << ")";
+  return TCPSocket(ret);
 }
 
 bool TCPSocket::connect(const char* ip, uint16_t port) const {
@@ -181,11 +179,13 @@ bool TCPSocket::connect(const char* ip, uint16_t port) const {
   if (ret == 0) {
     LOG(WARN) << "Connect (inet_pton) failed: " << ip << " is not a valid address";
     return false;
-  } else if (ret == -1) {
+  }
+  if (ret == -1) {
     LOG(WARN) << "Connect (inet_pton) failed: " << my_strerror(errno);
     return false;
   }
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   ret = ::connect(m_socket, reinterpret_cast<struct sockaddr*>(&server_address),
                   sizeof(server_address));
   if (ret == -1) {

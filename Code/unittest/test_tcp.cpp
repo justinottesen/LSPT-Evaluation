@@ -5,7 +5,6 @@
 static constexpr uint16_t PORT_NUM = 8080;
 
 TEST(TCPTest, SimpleOpenClose) {
-
   TCPSocket sock;
 
   EXPECT_TRUE(sock.create());
@@ -13,7 +12,6 @@ TEST(TCPTest, SimpleOpenClose) {
 }
 
 TEST(TCPTest, SimpleBind) {
-
   TCPSocket sock, sock2;
 
   EXPECT_TRUE(sock.create());
@@ -28,7 +26,6 @@ TEST(TCPTest, SimpleBind) {
 }
 
 TEST(TCPTest, SocketClosesInDestructor) {
-
   {
     TCPSocket sock;
 
@@ -45,7 +42,6 @@ TEST(TCPTest, SocketClosesInDestructor) {
 }
 
 TEST(TCPTest, TestListenConnectAccept) {
-
   TCPSocket server, client;
 
   EXPECT_TRUE(server.create());
@@ -61,7 +57,6 @@ TEST(TCPTest, TestListenConnectAccept) {
 }
 
 TEST(TCPTest, TestMessaging) {
-
   TCPSocket server_listener, client;
 
   EXPECT_TRUE(server_listener.create());

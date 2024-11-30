@@ -39,8 +39,8 @@ class TCPSocket {
   bool create();
   bool close();
   // full_msg will send until all bytes are sent
-  unsigned int send(std::string_view msg, bool full_msg = true);
-  std::string recv();
+  unsigned int send(std::string_view msg, bool full_msg = true) const;
+  std::string  recv() const;
 
   // Server Side Functions
   bool                     bind(uint16_t port) const;

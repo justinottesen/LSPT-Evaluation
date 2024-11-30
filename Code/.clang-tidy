@@ -9,7 +9,9 @@ Checks: 'bugprone-*,
          portability-*,
          readability-*,
          
-         -modernize-use-trailing-return-type'
+         -modernize-use-trailing-return-type,
+         -cppcoreguidelines-avoid-do-while,
+         -readability-identifier-length'
 CheckOptions:
   - key: lang.std
     value: 'c++20'

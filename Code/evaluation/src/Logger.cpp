@@ -18,7 +18,8 @@ static constexpr unsigned int LEVEL_FMT_WIDTH   = 8;
 static constexpr unsigned int TIME_FMT_WIDTH    = 25;
 static constexpr unsigned int FULL_HEADER_WIDTH = 100;
 
-Logger::Logger(LogLevel level, const std::filesystem::path& path, int line, std::string_view function)
+Logger::Logger(LogLevel level, const std::filesystem::path& path, int line,
+               std::string_view function)
     : m_level(level) {
   m_buffer << "[" << std::setw(LEVEL_FMT_WIDTH) << toStr(level) << "] " << path.filename().c_str()
            << ":" << line << " in " << function << "(): ";
