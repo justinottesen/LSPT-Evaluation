@@ -2,10 +2,6 @@ EVAL_SRC =../evaluation/src
 
 BIN = bin
 
-EXECUTABLES = $(addprefix $(BIN) /, $(TESTS))
-
-test_example_SOURCES = test_example.cpp
-
 test_logger_SOURCES = test_logger.cpp $(EVAL_SRC)/Logger.cpp $(EVAL_SRC)/TimeUtil.cpp
 
 test_tcp_SOURCES = test_tcp.cpp $(EVAL_SRC)/TCPSocket.cpp $(EVAL_SRC)/Logger.cpp $(EVAL_SRC)/TimeUtil.cpp $(EVAL_SRC)/Util.cpp
@@ -24,18 +20,13 @@ COMPILE_CMD = $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) $(LDLIBS) $(LDFLAGS) -o
 all : bin/test_example bin/test_logger
 
 .PHONY : run
-run : bin/test_example bin/test_logger bin/test_tcp
-	bin/test_example
+run : bin/test_logger bin/test_tcp
 	bin/test_logger
 	bin/test_tcp
 
 $(BIN)/test_logger: $(test_logger_SOURCES) 
 	mkdir -p $(BIN)
 	$(COMPILE_CMD) $(test_logger_SOURCES)
-
-$(BIN)/test_example : $(test_example_SOURCES)
-	mkdir -p $(BIN)
-	$(COMPILE_CMD) $(test_example_SOURCES)
 
 $(BIN)/test_tcp : $(test_tcp_SOURCES)
 	mkdir -p $(BIN)
