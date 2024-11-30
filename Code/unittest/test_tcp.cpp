@@ -2,7 +2,7 @@
 
 #include "TCPSocket.h"
 
-static constexpr uint16_t PORT_NUM = 9999;
+static constexpr uint16_t PORT_NUM = 8080;
 
 TEST(TCPTest, SimpleOpenClose) {
 
@@ -52,14 +52,31 @@ TEST(TCPTest, TestListenConnectAccept) {
   EXPECT_TRUE(server.bind(PORT_NUM));
   EXPECT_TRUE(server.listen(1));
 
-  // std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
   EXPECT_TRUE(client.create());
   EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
-
-  // std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   std::optional<TCPSocket> connected = server.accept();
 
   EXPECT_TRUE(connected.has_value());
+}
+
+TEST(TCPTest, TestMessaging) {
+
+  TCPSocket server_listener, client;
+
+  EXPECT_TRUE(server_listener.create());
+  EXPECT_TRUE(server_listener.bind(PORT_NUM));
+  EXPECT_TRUE(server_listener.listen(1));
+
+  EXPECT_TRUE(client.create());
+  EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
+
+  std::optional<TCPSocket> server_messager = server_listener.accept();
+  EXPECT_TRUE(server_messager.has_value());
+
+  EXPECT_EQ(client.send("Hello Server!"), strlen("Hello Server!"));
+  EXPECT_EQ(server_messager.value().recv(), "Hello Server!");
+
+  EXPECT_EQ(server_messager.value().send("Hello Client!"), strlen("Hello Client!"));
+  EXPECT_EQ(client.recv(), "Hello Client!");
 }

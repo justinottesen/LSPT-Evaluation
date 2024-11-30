@@ -13,6 +13,8 @@
 #include "Logger.h"
 #include "Util.h"
 
+static constexpr unsigned int RECV_BUFFER_SIZE = 4096;
+
 #ifdef REUSEADDR
 std::mutex                   TCPSocket::ports_mutex  = {};
 std::unordered_set<uint16_t> TCPSocket::ports_in_use = {};
@@ -68,6 +70,34 @@ bool TCPSocket::close() {
     m_socket = -1;
   }
   return ret == 0;
+}
+
+unsigned int TCPSocket::send(std::string_view msg, bool full_msg) {
+  LOG(DEBUG) << "Sending message " << msg;
+  unsigned int sent = 0;
+  do {
+    ssize_t n = ::send(m_socket, msg.data() + sent, msg.length() - sent, 0);
+    if (n == -1) {
+      LOG(WARN) << "Send Failed: " << my_strerror(errno);
+      break;
+    }
+    sent += n;
+    LOG(TRACE) << "Sent " << n << " bytes (overall " << sent << "/" << msg.length() << ")";
+  } while (sent < msg.length() && full_msg);
+  return sent;
+}
+
+std::string TCPSocket::recv() {
+  std::string buf;
+  buf.resize(RECV_BUFFER_SIZE);
+  LOG(INFO) << "BUF SIZE " << buf.capacity();
+  ssize_t n = ::recv(m_socket, buf.data(), buf.size() - 1, 0);
+  if (n == -1) {
+    LOG(WARN) << "Recv failed: " << my_strerror(errno);
+  }
+  buf.resize(n);
+  LOG(DEBUG) << "Received " << n << " bytes (" << buf << ")";
+  return buf;
 }
 
 bool TCPSocket::bind(uint16_t port) const {

@@ -35,8 +35,12 @@ class TCPSocket {
   TCPSocket(const TCPSocket&)            = delete;
   TCPSocket& operator=(const TCPSocket&) = delete;
 
+  // General Functions
   bool create();
   bool close();
+  // full_msg will send until all bytes are sent
+  unsigned int send(std::string_view msg, bool full_msg = true);
+  std::string recv();
 
   // Server Side Functions
   bool                     bind(uint16_t port) const;

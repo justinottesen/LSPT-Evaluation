@@ -130,3 +130,9 @@ class Logger {
     }
   };
 };
+
+class ScopedConsoleLogger {
+ public:
+  ScopedConsoleLogger(LogLevel level = INFO) { Logger::addConsole(level); }
+  ~ScopedConsoleLogger() { Logger::removeConsole(); }
+};
