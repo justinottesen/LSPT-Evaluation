@@ -100,16 +100,3 @@ TEST(LoggerTest, TestCloseConsole) {
   LOG(CRITICAL) << "WE HAVE A HUGE HUGE PROBLEM AHHH";
   EXPECT_TRUE(testing::internal::GetCapturedStdout().empty());
 }
-
-// TEST(MyTest, MatchesRegexTest) {
-//   std::string str = "Hello, world!";
-
-//   // Check if the string contains "world"
-//   EXPECT_THAT(str, testing::ContainsRegex("world"));
-
-//   // Check if the string matches the pattern "Hello, [a-z]+!"
-//   EXPECT_THAT(str, testing::MatchesRegex("Hello, [a-z]+!"));
-
-//   // Check if the string does not match the pattern "Goodbye"
-//   EXPECT_THAT(str, testing::Not(testing::MatchesRegex("Goodbye")));
-// }
