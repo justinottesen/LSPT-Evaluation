@@ -19,7 +19,7 @@ std::string_view toStr(LogLevel level);
 
 class Logger {
  public:
-  Logger(LogLevel level, const std::filesystem::path& path, int line, const char* function);
+  Logger(LogLevel level, const std::filesystem::path& path, int line, std::string_view function);
   ~Logger();
 
   // Delete all other constructors & assignment
