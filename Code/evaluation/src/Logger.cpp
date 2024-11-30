@@ -89,6 +89,7 @@ Logger::Workers::FileWorker::FileWorker(LogLevel level, const std::filesystem::p
     std::filesystem::create_directories(path.parent_path());
   }
   m_stream.open(path, std::ios::app);
+  m_stream << std::unitbuf;
   if (!m_stream.good()) { std::cerr << "Unable to open log at " << path << '\n'; }
   logOpeningMessage(path.string());
 }

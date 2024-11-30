@@ -1,27 +1,51 @@
-TESTS = test_example
+EVAL_SRC =../ evaluation
+        / src
 
-CXX = clang++
+              BIN = bin
 
-CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -g
-LDFLAGS = -L../googletest/build/lib
-LDLIBS = -lgtest_main -lgtest
+    TESTS = test_example test_logger
 
-all: $(TESTS)
+        EXECUTABLES = $(addprefix $(BIN) /, $(TESTS))
 
-run: bin/$(TESTS)
-	./bin/$(TESTS)
+            test_example_SOURCES = test_example.cpp
 
-clean:
-	rm -rf bin obj
+                                       test_logger_SOURCES =
+                test_logger.cpp $(EVAL_SRC) / Logger.cpp $(EVAL_SRC)
+                / TimeUtil.cpp
 
-bin:
-	mkdir -p bin
+                      CXX = clang++ LD = clang++ CFLAGS = CXXFLAGS = -std = c++ 20 CPPFLAGS =
+                    -Wall - Wextra - Werror - g DEPFLAGS                  = -MMD - MP INCLUDES =
+                        -I../ sqlite - I../ nlohmann_json / single_include - I../ evaluation / src
+                        - I../ googletest / googletest / include
+                        - I../ googletest / googlemock / include LDLIBS =
+                            -lgtest_main - lgtest                LDFLAGS = -L../ googletest / build
+                                                          / lib
 
-obj:
-	mkdir -p obj
+                                                                COMPILE_CMD =
+                                $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCLUDES) $(LDLIBS) $(LDFLAGS)
+                                - o $ @
 
-test_example.o: test_example.cpp obj
-	$(CXX) $(CXXFLAGS) -I../googletest/googletest/include -c test_example.cpp -o obj/$@
+                                          .PHONY
+    : all all : bin / test_example bin
+                                      / test_logger
 
-test_example: test_example.o bin
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LDLIBS) obj/$< -o bin/$@
+                                            .PHONY : run run : bin
+                                      / test_example bin / test_logger bin / test_example bin
+                                      / test_logger
+
+                                          $(BIN)
+    : mkdir
+                                - p $(BIN)
+
+                                          $(BIN)
+                                      / test_logger : $(test_logger_SOURCES) mkdir
+                                - p $(BIN) $(COMPILE_CMD) $(test_logger_SOURCES)
+
+                                          $(BIN)
+                                      / test_example : $(test_example_SOURCES) mkdir
+                                - p $(BIN) $(COMPILE_CMD) $(test_example_SOURCES)
+
+                                      .PHONY
+    : clean clean : $(RM) - r $(BIN)
+
+                                - include $(DEPENDS)
