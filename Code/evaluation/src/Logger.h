@@ -11,7 +11,7 @@
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage): Macro needed for log values
 #define LOG(level) \
-  if (true) Logger(level, __FILE__, __LINE__, __FUNCTION__).stream()
+  if (true) Logger(level, __FILE__, __LINE__, static_cast<const char*>(__FUNCTION__)).stream()
 
 enum LogLevel : char { CRITICAL, ERROR, WARN, INFO, DEBUG, TRACE };
 
