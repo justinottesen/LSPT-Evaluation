@@ -1,11 +1,14 @@
 #include "TCPSocket.h"
 
 #include <arpa/inet.h>
+#include <asm-generic/socket.h>
+#include <bits/types/struct_timeval.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cctype>
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
@@ -23,8 +26,37 @@ std::mutex                   TCPSocket::ports_mutex  = {};
 std::unordered_set<uint16_t> TCPSocket::ports_in_use = {};
 #endif
 
+TCPSocket::TCPSocket()
+    : m_socket(-1)
+    , m_send_timeout(0)
+    , m_recv_timeout(0) {}
+
+TCPSocket::TCPSocket(TCPSocket&& sock) noexcept
+    : m_socket(sock.m_socket)
+    , m_send_timeout(sock.m_send_timeout)
+    , m_recv_timeout(sock.m_recv_timeout) {
+  sock.m_socket       = -1;
+  sock.m_send_timeout = 0;
+  sock.m_recv_timeout = 0;
+}
+
+TCPSocket& TCPSocket::operator=(TCPSocket&& sock) noexcept {
+  if (m_socket != -1) {
+    if (!close()) { LOG(WARN) << "Leaking open socket" << m_socket; }
+  }
+  m_socket            = sock.m_socket;
+  m_send_timeout      = sock.m_send_timeout;
+  m_recv_timeout      = sock.m_recv_timeout;
+  sock.m_socket       = -1;
+  sock.m_send_timeout = 0;
+  sock.m_recv_timeout = 0;
+  return *this;
+}
+
 TCPSocket::~TCPSocket() {
-  if (m_socket != -1) { close(); }
+  if (m_socket != -1) {
+    if (!close()) { LOG(WARN) << "Leaking open socket" << m_socket; }
+  }
 }
 
 bool TCPSocket::create() {
@@ -69,12 +101,18 @@ bool TCPSocket::close() {
     LOG(WARN) << "Unable to close socket (fd: " << m_socket << "): " << my_strerror(errno);
   } else {
     LOG(TRACE) << "Closed socket fd: " << m_socket;
-    m_socket = -1;
+    m_socket       = -1;
+    m_send_timeout = 0;
+    m_recv_timeout = 0;
   }
   return ret == 0;
 }
 
 unsigned int TCPSocket::send(std::string_view msg, bool full_msg) const {
+  if (m_socket == -1) {
+    LOG(WARN) << "Tried to send on closed socket";
+    return 0;
+  }
   LOG(DEBUG) << "Sending message " << msg;
   unsigned int sent = 0;
   do {
@@ -91,13 +129,48 @@ unsigned int TCPSocket::send(std::string_view msg, bool full_msg) const {
 
 std::string TCPSocket::recv() const {
   std::string buf;
+  if (m_socket == -1) {
+    LOG(WARN) << "Tried to receive on closed socket";
+    return buf;
+  }
   buf.resize(RECV_BUFFER_SIZE);
   LOG(INFO) << "BUF SIZE " << buf.capacity();
   const ssize_t n = ::recv(m_socket, buf.data(), buf.size() - 1, 0);
-  if (n == -1) { LOG(WARN) << "Recv failed: " << my_strerror(errno); }
+  if (n == -1) {
+    LOG(WARN) << "Recv failed: " << my_strerror(errno);
+    return "";
+  }
   buf.resize(n);
   LOG(DEBUG) << "Received " << n << " bytes (" << buf << ")";
   return buf;
+}
+
+template <> bool TCPSocket::setTimeout<SO_RCVTIMEO>(unsigned int timeout) {
+  return setTimeout(timeout, SO_RCVTIMEO);
+}
+
+template <> bool TCPSocket::setTimeout<SO_SNDTIMEO>(unsigned int timeout) {
+  return setTimeout(timeout, SO_SNDTIMEO);
+}
+
+bool TCPSocket::setTimeout(unsigned int timeout, int option) const {
+  if (m_socket == -1) {
+    LOG(WARN) << "Tried to set timeout on closed socket";
+    return false;
+  }
+  if ((option == SO_RCVTIMEO && m_recv_timeout == timeout)
+      || (option == SO_SNDTIMEO && m_send_timeout == timeout)) {
+    LOG(DEBUG) << "Socket (fd: " << m_socket << ") timeout already set to " << timeout;
+    return true;
+  }
+
+  struct timeval tv{.tv_sec = timeout, .tv_usec = 0};
+  if (setsockopt(m_socket, SOL_SOCKET, option, &tv, sizeof(tv)) == -1) {
+    LOG(WARN) << "Unable to setsockopt for timeout: " << my_strerror(errno);
+    return false;
+  }
+  LOG(DEBUG) << "Set socket (fd: " << m_socket << ") timeout to " << timeout;
+  return true;
 }
 
 bool TCPSocket::bind(uint16_t port) const {
@@ -194,4 +267,41 @@ bool TCPSocket::connect(const char* ip, uint16_t port) const {
     LOG(DEBUG) << "Connect succeeded (Address: " << ip << ":" << port << ")";
   }
   return ret == 0;
+}
+
+bool SocketStream::hasNext() {
+  unsigned int tmp_pos = m_pos;
+  grab_if_needed(tmp_pos);
+  while (tmp_pos < m_buffer.length() && (isspace(m_buffer[tmp_pos]) != 0)) {
+    grab_if_needed(++tmp_pos);
+  }
+  return tmp_pos < m_buffer.length();
+}
+
+std::string SocketStream::nextWord() {
+  // Increment to start of next word
+  grab_if_needed(m_pos);
+  while (m_pos < m_buffer.length() && (isspace(m_buffer[m_pos]) != 0)) { grab_if_needed(++m_pos); }
+
+  // Increment to end of word
+  const unsigned int start_pos = m_pos;
+  while (m_pos < m_buffer.length() && (isspace(m_buffer[m_pos]) == 0)) { grab_if_needed(++m_pos); }
+  return m_buffer.substr(start_pos, m_pos - start_pos);
+}
+
+std::string SocketStream::nextLine() {
+  grab_if_needed(m_pos);
+  const unsigned int start_pos = m_pos;
+  while (m_pos < m_buffer.length() && m_buffer[m_pos] != '\n') { grab_if_needed(++m_pos); }
+  return m_buffer.substr(start_pos, (m_pos++) - start_pos);
+}
+
+void SocketStream::grab() {
+  const std::string next = m_socket.recv();
+  m_buffer += next;
+  m_timed_out = m_timed_out || next.empty();
+}
+
+void SocketStream::grab_if_needed(unsigned int buffer_pos) {
+  if (buffer_pos == m_buffer.length() && !m_timed_out) { grab(); }
 }
