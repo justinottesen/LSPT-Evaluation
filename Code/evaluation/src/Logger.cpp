@@ -59,6 +59,7 @@ void Logger::Workers::log(LogLevel level, std::string_view msg) {
 void Logger::Workers::Worker::log(LogLevel level, std::string_view msg) {
   const std::lock_guard<std::mutex> lock(m_mutex);
   if (level > m_level) { return; }
+  while (msg.back() == '\n') { msg.remove_suffix(1); }
   logTime();
   stream() << log_color(level);
   std::size_t start = 0;
@@ -66,7 +67,7 @@ void Logger::Workers::Worker::log(LogLevel level, std::string_view msg) {
     std::size_t end = msg.find('\n', start);
     if (end == std::string::npos) { end = msg.size(); }
     if (start > 0) { stream() << std::string(TIME_FMT_WIDTH + LEVEL_FMT_WIDTH + 3, ' ') << "-> "; }
-    stream() << msg.substr(start, end + 1);
+    stream() << msg.substr(start, end - start + 1);
     start = end + 1;
   }
   stream() << reset_color() << '\n';
