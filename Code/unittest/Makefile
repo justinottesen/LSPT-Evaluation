@@ -9,7 +9,7 @@ test_tcp_SOURCES = test_tcp.cpp $(EVAL_SRC)/TCPSocket.cpp $(EVAL_SRC)/Logger.cpp
 CXX = clang++
 LD = clang++
 CXXFLAGS = -std=c++20
-CPPFLAGS = -Wall -Wextra -Werror -g -DREUSEADDR
+CPPFLAGS = -Wall -Wextra -Werror -g -DREUSEADDR # REUSEADDR defined locally for testing, we probably don't want this for release
 INCLUDES = -I../sqlite -I../nlohmann_json/single_include -I../evaluation/src -I../googletest/googletest/include -I../googletest/googlemock/include
 LDLIBS = -lgtest_main -lgtest
 LDFLAGS = -L../googletest/build/lib

@@ -29,12 +29,13 @@ TEST(LoggerTest, TestBasic) {
 TEST(LoggerTest, TestChangeLevel) {
   testing::internal::CaptureStdout();
   Logger::setConsoleLevel(DEBUG);
-  EXPECT_THAT(
-      testing::internal::GetCapturedStdout(),
-      testing::
-          MatchesRegex(
-              "[0-9]{4}-[0-9]{2}-[0-9]{2} " "[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]" "{3} " "\\| " "Chang"
-                                                                                             "ing " "log " "level" " from" " INFO" " " "t" "o" " " "D" "E" "B" "U" "G" "\n"));
+
+  std::string_view
+      log_change_regex =
+          "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} \\| Changing log level "
+          "from " "INFO to DEBUG\n";
+
+  EXPECT_THAT(testing::internal::GetCapturedStdout(), testing::MatchesRegex(log_change_regex));
 
   testing::internal::CaptureStdout();
   LOG(DEBUG) << "Testing Debug Msg";

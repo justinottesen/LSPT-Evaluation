@@ -15,6 +15,8 @@ Checks: 'bugprone-*,
 CheckOptions:
   - key: lang.std
     value: 'c++20'
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 50
 ExtraArgs: [ '-Isqlite', '-Inlohmann_json/single_include' ]
 HeaderFilterRegex: '^(?!sqlite|nlohmann_json/single_include).*$'
 WarningsAsErrors: '*'

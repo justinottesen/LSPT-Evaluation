@@ -11,6 +11,7 @@
 #include <shared_mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "TimeUtil.h"
 
@@ -25,7 +26,11 @@ Logger::Logger(LogLevel level, const std::filesystem::path& path, int line,
            << ":" << line << " in " << function << "(): ";
 }
 
-Logger::~Logger() { Workers::log(m_level, m_buffer.str()); }
+Logger::~Logger() {
+  std::string msg_str = m_buffer.str();
+  std::erase(msg_str, '\r');
+  Workers::log(m_level, msg_str);
+}
 
 void Logger::Workers::addWorker(const std::filesystem::path& path, LogLevel level) {
   const std::lock_guard<std::shared_mutex> lock(mutex());
