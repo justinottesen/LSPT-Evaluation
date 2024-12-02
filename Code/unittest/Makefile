@@ -19,7 +19,7 @@ LDFLAGS = -L../googletest/build/lib
 COMPILE_CMD = $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) $(LDLIBS) $(LDFLAGS) -o $@
 
 .PHONY: all
-all : bin/test_example bin/test_logger
+all : bin/test_logger bin/test_tcp bin/test_http
 
 .PHONY : run
 run : bin/test_logger bin/test_tcp bin/test_http
