@@ -108,12 +108,12 @@ bool TCPSocket::close() {
   return ret == 0;
 }
 
-unsigned int TCPSocket::send(std::string_view msg, bool full_msg) const {
+template <> bool TCPSocket::send<std::string_view>(const std::string_view& msg, bool full_msg) const {
   if (m_socket == -1) {
     LOG(WARN) << "Tried to send on closed socket";
     return 0;
   }
-  LOG(DEBUG) << "Sending message " << msg;
+  LOG(DEBUG) << "Sending message:\n" << msg;
   unsigned int sent = 0;
   do {
     const ssize_t n = ::send(m_socket, msg.data() + sent, msg.length() - sent, 0);
@@ -124,7 +124,10 @@ unsigned int TCPSocket::send(std::string_view msg, bool full_msg) const {
     sent += n;
     LOG(TRACE) << "Sent " << n << " bytes (overall " << sent << "/" << msg.length() << ")";
   } while (sent < msg.length() && full_msg);
-  return sent;
+  if (sent < msg.length()) {
+    LOG(WARN) << "Failed to send full message (sent " << sent << " of " << msg.length() << ")";
+  }
+  return sent == msg.length();
 }
 
 std::string TCPSocket::recv() const {
@@ -141,35 +144,38 @@ std::string TCPSocket::recv() const {
     return "";
   }
   buf.resize(n);
-  LOG(DEBUG) << "Received " << n << " bytes (" << buf << ")";
+  LOG(DEBUG) << "Received " << n << " bytes:\n" << buf;
   return buf;
 }
 
-template <> bool TCPSocket::setTimeout<SO_RCVTIMEO>(unsigned int timeout) {
-  return setTimeout(timeout, SO_RCVTIMEO);
+template <> bool TCPSocket::setTimeout<SO_RCVTIMEO>(unsigned int timeout_ms) {
+  return setTimeout(timeout_ms, SO_RCVTIMEO);
 }
 
-template <> bool TCPSocket::setTimeout<SO_SNDTIMEO>(unsigned int timeout) {
-  return setTimeout(timeout, SO_SNDTIMEO);
+template <> bool TCPSocket::setTimeout<SO_SNDTIMEO>(unsigned int timeout_ms) {
+  return setTimeout(timeout_ms, SO_SNDTIMEO);
 }
 
-bool TCPSocket::setTimeout(unsigned int timeout, int option) const {
+bool TCPSocket::setTimeout(unsigned int timeout_ms, int option) {
   if (m_socket == -1) {
     LOG(WARN) << "Tried to set timeout on closed socket";
     return false;
   }
-  if ((option == SO_RCVTIMEO && m_recv_timeout == timeout)
-      || (option == SO_SNDTIMEO && m_send_timeout == timeout)) {
-    LOG(DEBUG) << "Socket (fd: " << m_socket << ") timeout already set to " << timeout;
+  if ((option == SO_RCVTIMEO && m_recv_timeout == timeout_ms)
+      || (option == SO_SNDTIMEO && m_send_timeout == timeout_ms)) {
+    LOG(DEBUG) << "Socket (fd: " << m_socket << ") timeout already set to " << timeout_ms << " ms";
     return true;
   }
 
-  struct timeval tv{.tv_sec = timeout, .tv_usec = 0};
+  struct timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = timeout_ms * 1000 };
+  LOG(DEBUG) << "Setting timeout (fd: " << m_socket << ") to " << tv.tv_sec << "." << tv.tv_usec;
   if (setsockopt(m_socket, SOL_SOCKET, option, &tv, sizeof(tv)) == -1) {
     LOG(WARN) << "Unable to setsockopt for timeout: " << my_strerror(errno);
     return false;
   }
-  LOG(DEBUG) << "Set socket (fd: " << m_socket << ") timeout to " << timeout;
+  if (option == SO_RCVTIMEO) { m_recv_timeout = timeout_ms; }
+  if (option == SO_SNDTIMEO) { m_send_timeout = timeout_ms; }
+  LOG(DEBUG) << "Set socket (fd: " << m_socket << ") timeout to " << timeout_ms << "ms";
   return true;
 }
 
@@ -245,6 +251,13 @@ std::optional<TCPSocket> TCPSocket::accept() const {
 }
 
 bool TCPSocket::connect(const char* ip, uint16_t port) const {
+  if (m_socket == -1) {
+    LOG(WARN) << "Tried to connect on closed socket";
+    return false;
+  }
+
+  LOG(INFO) << "Attempting to connect to " << ip << ":" << port;
+
   struct sockaddr_in server_address{
       .sin_family = AF_INET, .sin_port = htons(port), .sin_addr{}, .sin_zero{}};
 
@@ -289,11 +302,23 @@ std::string SocketStream::nextWord() {
   return m_buffer.substr(start_pos, m_pos - start_pos);
 }
 
-std::string SocketStream::nextLine() {
+std::string SocketStream::nextLine(bool skip_whitespace) {
   grab_if_needed(m_pos);
+  if (skip_whitespace) {
+    while (m_pos < m_buffer.length() && isspace(m_buffer[m_pos])) { grab_if_needed(++m_pos); }
+  }
   const unsigned int start_pos = m_pos;
   while (m_pos < m_buffer.length() && m_buffer[m_pos] != '\n') { grab_if_needed(++m_pos); }
-  return m_buffer.substr(start_pos, (m_pos++) - start_pos);
+  std::string line = m_buffer.substr(start_pos, (m_pos++) - start_pos);
+  if (line.back() == '\r') { line.pop_back(); } // HTTP uses CRLF
+  return line;
+}
+
+std::string SocketStream::remaining() {
+  grab_if_needed(m_pos);
+  const unsigned int start_pos = m_pos;
+  while (m_pos < m_buffer.length()) { m_pos = m_buffer.length(); grab_if_needed(m_pos); }
+  return m_buffer.substr(start_pos);
 }
 
 void SocketStream::grab() {

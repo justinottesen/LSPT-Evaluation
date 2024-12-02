@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "Logger.h"
+#include "Util.h"
 
 #ifdef REUSEADDR
   #include <mutex>
@@ -32,10 +33,11 @@ class TCPSocket {
   bool close();
 
   // full_msg - send until all bytes are sent
-  unsigned int send(std::string_view msg, bool full_msg = true) const;
+  // unsigned int send(std::string_view msg, bool full_msg = true) const;
+  template <class T> bool send(const T& val, bool full_msg = true) const;
 
   // 0 for no timeout, option: SO_RCVTIMEO or SO_SNDTIMEO
-  template <int option> bool setTimeout(unsigned int timeout);
+  template <int option> bool setTimeout(unsigned int timeout_ms);
   std::string                recv() const;
   int                        fd() const { return m_socket; }
 
@@ -60,13 +62,24 @@ class TCPSocket {
       , m_send_timeout(0)
       , m_recv_timeout(0) {}
 
-  bool setTimeout(unsigned int timeout, int option) const;
+  bool setTimeout(unsigned int timeout_ms, int option);
 
 #ifdef REUSEADDR
   static std::mutex                   ports_mutex;
   static std::unordered_set<uint16_t> ports_in_use;
 #endif
 };
+
+template <class T> bool TCPSocket::send(const T& val, bool full_msg) const {
+  using namespace std;
+  std::string val_str;
+  if constexpr (std::is_constructible_v<std::string_view, T>) {
+    val_str = val;
+  } else {
+    val_str = to_string(val);
+  }
+  return send(std::string_view(val_str), full_msg);
+}
 
 class SocketStream {
  public:
@@ -75,9 +88,11 @@ class SocketStream {
 
   bool        hasNext();
   std::string nextWord();
-  std::string nextLine();
+  std::string nextLine(bool skip_whitespace = false);
+  std::string remaining();
 
   const std::string& str() { return m_buffer; }
+  std::string        passedBuffer() { return m_buffer.substr(0, m_pos); }
 
  private:
   void grab();

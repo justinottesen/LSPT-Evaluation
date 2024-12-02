@@ -1,4 +1,9 @@
 
+#include <unistd.h>
+
+#include <array>
+#include <cerrno>
+#include <csignal>
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
@@ -6,6 +11,7 @@
 
 #include "HTTPServer.h"
 #include "Logger.h"
+#include "Util.h"
 
 // Default values for arguments
 static constexpr uint16_t DEFAULT_LISTENER_PORT = 8080;
@@ -28,6 +34,57 @@ extern char* optarg;
 extern int   optind;
 extern int   opterr;
 extern int   optopt;
+
+// Graceful Shutdown handling
+
+namespace {
+
+std::array<int, 2> shutdown_pipe;
+
+void close_shutdown_pipe() {
+  LOG(TRACE) << "Closing shutdown pipe (fds: " << shutdown_pipe[0] << " " << shutdown_pipe[1]
+             << ")";
+  if (close(shutdown_pipe[0]) == -1) {
+    LOG(WARN) << "Unable to close shutdown_pipe[0]: " << my_strerror(errno);
+  }
+  if (close(shutdown_pipe[1]) == -1) {
+    LOG(WARN) << "Unable to close shutdown_pipe[1]: " << my_strerror(errno);
+  }
+}
+
+void signal_handler(int signum) {
+  if (signum == SIGINT) {
+    LOG(INFO) << "SIGINT received, sending shutdown to HTTP server...";
+    write(shutdown_pipe[1], "1", 1);
+  }
+}
+
+bool set_up_signal_handling() {
+  // Create pipe for signal handling
+  if (pipe(shutdown_pipe.data()) == -1) {
+    LOG(CRITICAL) << "Unable to create shutdown pipe: " << my_strerror(errno);
+    return false;
+  }
+  LOG(TRACE) << "Opened shutdown pipe (fds: " << shutdown_pipe[0] << " " << shutdown_pipe[1] << ")";
+  if (atexit(close_shutdown_pipe) != 0) {
+    // Not a huge deal, just won't get cleaned up
+    LOG(WARN) << "Unable to register `close_shutdown_pipe` at program exit";
+  }
+
+  // Register signal handler for SIGINT
+  struct sigaction action{};
+  action.sa_handler = signal_handler;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = 0;
+
+  if (sigaction(SIGINT, &action, nullptr) == -1) {
+    LOG(CRITICAL) << "Unable to register signal handler for shutdown: " << my_strerror(errno);
+    return false;
+  }
+  return true;
+}
+
+}    // namespace
 // NOLINTEND
 
 int main(int argc, char* argv[]) {
@@ -76,9 +133,12 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  // Set up HTTP server
-  const HTTPServer server(listener_port, backlog_size);
-  server.init();
+  if (!set_up_signal_handling()) {
+    LOG(CRITICAL) << "Falied to set up signal handling";
+    return EXIT_FAILURE;
+  }
 
-  return EXIT_SUCCESS;
+  // Set up HTTP server
+  HTTPServer server(listener_port, backlog_size);
+  return (server.run(shutdown_pipe[0]) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
