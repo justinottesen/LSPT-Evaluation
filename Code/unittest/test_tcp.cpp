@@ -1,26 +1,9 @@
 #include <gtest/gtest.h>
 
 #include "TCPSocket.h"
+#include "TestUtil.hpp"
 
 static constexpr uint16_t PORT_NUM = 8080;
-
-static std::pair<TCPSocket, TCPSocket> get_client_and_server() {
-  std::pair<TCPSocket, TCPSocket> sockets;
-
-  EXPECT_TRUE(sockets.first.create());
-  EXPECT_TRUE(sockets.first.bind(PORT_NUM));
-  EXPECT_TRUE(sockets.first.listen(1));
-
-  EXPECT_TRUE(sockets.second.create());
-  EXPECT_TRUE(sockets.second.connect("127.0.0.1", PORT_NUM));
-
-  std::optional<TCPSocket> server_messager = sockets.first.accept();
-  EXPECT_TRUE(server_messager.has_value());
-
-  sockets.first = std::move(server_messager.value());
-
-  return sockets;
-}
 
 TEST(TCPTest, SimpleOpenClose) {
   TCPSocket sock;
@@ -87,47 +70,57 @@ TEST(TCPTest, TestMessaging) {
   std::optional<TCPSocket> server_messager = server_listener.accept();
   EXPECT_TRUE(server_messager.has_value());
 
-  EXPECT_EQ(client.send("Hello Server!"), strlen("Hello Server!"));
+  EXPECT_TRUE(client.send("Hello Server!"));
   EXPECT_EQ(server_messager.value().recv(), "Hello Server!");
 
-  EXPECT_EQ(server_messager.value().send("Hello Client!"), strlen("Hello Client!"));
+  EXPECT_TRUE(server_messager.value().send("Hello Client!"));
   EXPECT_EQ(client.recv(), "Hello Client!");
 }
 
 TEST(TCPTest, TestSplitSends) {
-  std::pair<TCPSocket, TCPSocket> sockets = get_client_and_server();
+  std::pair<TCPSocket, TCPSocket> sockets = get_server_and_client(PORT_NUM);
 
-  EXPECT_EQ(sockets.second.send("Happy "), strlen("Happy "));
-  EXPECT_EQ(sockets.second.send("Birthday!"), strlen("Birthday!"));
+  EXPECT_TRUE(sockets.second.send("Happy "));
+  EXPECT_TRUE(sockets.second.send("Birthday!"));
   EXPECT_EQ(sockets.first.recv(), "Happy Birthday!");
 }
 
 TEST(TCPTest, TestTimeout) {
-  std::pair<TCPSocket, TCPSocket> sockets = get_client_and_server();
+  std::pair<TCPSocket, TCPSocket> sockets = get_server_and_client(PORT_NUM);
 
-  EXPECT_TRUE(sockets.first.setTimeout<SO_RCVTIMEO>(1));
+  EXPECT_TRUE(sockets.first.setTimeout<SO_RCVTIMEO>(100));
+
+  int sockfd = sockets.first.fd();
+  struct timeval tv{.tv_sec = 0, .tv_usec = 0};
+  socklen_t len = sizeof(tv);
+  if (getsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, &len) == -1) {
+    LOG(ERROR) << "Getsockopt failed: " << my_strerror(errno);
+  };
+  LOG(INFO) << "Timeout: " << tv.tv_sec << "." << tv.tv_usec;
+  EXPECT_EQ(tv.tv_usec, 100 * 1000);
+
   EXPECT_EQ(sockets.first.recv(), "");
 
-  EXPECT_EQ(sockets.second.send("Happy Birthday!"), strlen("Happy Birthday!"));
+  EXPECT_TRUE(sockets.second.send("Happy Birthday!"));
   EXPECT_EQ(sockets.first.recv(), "Happy Birthday!");
 }
 
 TEST(TCPTest, TestSockStream) {
-  std::pair<TCPSocket, TCPSocket> sockets = get_client_and_server();
-  EXPECT_TRUE(sockets.first.setTimeout<SO_RCVTIMEO>(1));
+  std::pair<TCPSocket, TCPSocket> sockets = get_server_and_client(PORT_NUM);
+  EXPECT_TRUE(sockets.first.setTimeout<SO_RCVTIMEO>(100));
 
   SocketStream ss(sockets.first);
 
   std::string line1 = "Once upon a midnight dreary, while I pondered weak and weary";
   std::string line2 = "\nOver many a quaint and curious volume of forgotten lore";
-  EXPECT_EQ(sockets.second.send(line1), line1.length());
+  EXPECT_TRUE(sockets.second.send(line1));
 
   std::string combined = "";
   while (ss.hasNext()) {
     std::string word = ss.nextWord();
     if (!combined.empty()) { combined += " "; }
     combined += word;
-    if (word == "while") { EXPECT_EQ(sockets.second.send(line2), line2.length()); }
+    if (word == "while") { EXPECT_TRUE(sockets.second.send(line2)); }
   }
 
   EXPECT_EQ(combined, line1 + ' ' + line2.substr(1));

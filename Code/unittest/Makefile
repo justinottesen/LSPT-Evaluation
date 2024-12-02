@@ -2,9 +2,11 @@ EVAL_SRC =../evaluation/src
 
 BIN = bin
 
-test_logger_SOURCES = test_logger.cpp $(EVAL_SRC)/Logger.cpp $(EVAL_SRC)/TimeUtil.cpp
+common_SOURCES = $(EVAL_SRC)/Logger.cpp $(EVAL_SRC)/TimeUtil.cpp $(EVAL_SRC)/Util.cpp
 
-test_tcp_SOURCES = test_tcp.cpp $(EVAL_SRC)/TCPSocket.cpp $(EVAL_SRC)/Logger.cpp $(EVAL_SRC)/TimeUtil.cpp $(EVAL_SRC)/Util.cpp
+test_logger_SOURCES = test_logger.cpp $(common_SOURCES)
+test_tcp_SOURCES = test_tcp.cpp $(EVAL_SRC)/TCPSocket.cpp $(common_SOURCES)
+test_http_SOURCES = test_http.cpp $(EVAL_SRC)/HTTPServer.cpp $(EVAL_SRC)/TCPSocket.cpp $(common_SOURCES)
 
 CXX = clang++
 LD = clang++
@@ -20,9 +22,10 @@ COMPILE_CMD = $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) $(LDLIBS) $(LDFLAGS) -o
 all : bin/test_example bin/test_logger
 
 .PHONY : run
-run : bin/test_logger bin/test_tcp
+run : bin/test_logger bin/test_tcp bin/test_http
 	bin/test_logger
 	bin/test_tcp
+	bin/test_http
 
 $(BIN)/test_logger: $(test_logger_SOURCES) 
 	mkdir -p $(BIN)
@@ -31,6 +34,10 @@ $(BIN)/test_logger: $(test_logger_SOURCES)
 $(BIN)/test_tcp : $(test_tcp_SOURCES)
 	mkdir -p $(BIN)
 	$(COMPILE_CMD) $(test_tcp_SOURCES)
+
+$(BIN)/test_http : $(test_http_SOURCES)
+	mkdir -p $(BIN)
+	$(COMPILE_CMD) $(test_http_SOURCES)
 
 .PHONY : clean
 clean : 
