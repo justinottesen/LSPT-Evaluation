@@ -104,11 +104,11 @@ bool HTTPServer::run(int shutdown_fd) {
       LOG(DEBUG) << "Poll timed out. Polling agian...";
       continue;
     }
-    if ((static_cast<uint8_t>(poll_fds[0].revents) & POLLIN) != 0) {
+    if ((static_cast<uint8_t>(poll_fds[0].revents) & static_cast<uint8_t>(POLLIN)) != 0) {
       LOG(INFO) << "Poll received shutdown input";
       break;
     }
-    if ((static_cast<uint8_t>(poll_fds[1].revents) & POLLIN) == 0) {
+    if ((static_cast<uint8_t>(poll_fds[1].revents) & static_cast<uint8_t>(POLLIN)) == 0) {
       LOG(WARN) << "Poll received non-POLLIN event. This is unexpected but shouldn't be an issue";
       poll_fds[0].revents = 0;
       poll_fds[1].revents = 0;
