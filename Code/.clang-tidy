@@ -11,7 +11,8 @@ Checks: 'bugprone-*,
          
          -modernize-use-trailing-return-type,
          -cppcoreguidelines-avoid-do-while,
-         -readability-identifier-length'
+         -readability-identifier-length,
+         -*magic-numbers'
 CheckOptions:
   - key: lang.std
     value: 'c++20'

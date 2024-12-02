@@ -50,7 +50,7 @@ class HTTPServer {
 
   void handle_client(TCPSocket& client_sock);
 
-  static std::optional<HTTPRequest> parseRequest(TCPSocket& sock);
+  static std::optional<HTTPRequest>  parseRequest(TCPSocket& sock);
   static std::optional<HTTPResponse> parseResponse(TCPSocket& sock);
 
  private:
@@ -59,5 +59,6 @@ class HTTPServer {
 
   TCPSocket m_listener_socket;
 
-  const std::unordered_map<std::string, std::function<void(const TCPSocket&, const HTTPRequest&)>> m_handlers;
+  const std::unordered_map<std::string, std::function<void(const TCPSocket&, const HTTPRequest&)>>
+      m_handlers;
 };

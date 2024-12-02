@@ -2,6 +2,7 @@
 
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>
+#include <bits/types.h>
 #include <bits/types/struct_timeval.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -108,26 +109,27 @@ bool TCPSocket::close() {
   return ret == 0;
 }
 
-template <> bool TCPSocket::send<std::string_view>(const std::string_view& msg, bool full_msg) const {
+template <>
+bool TCPSocket::send<std::string_view>(const std::string_view& val, bool full_msg) const {
   if (m_socket == -1) {
     LOG(WARN) << "Tried to send on closed socket";
-    return 0;
+    return false;
   }
-  LOG(DEBUG) << "Sending message:\n" << msg;
+  LOG(DEBUG) << "Sending message:\n" << val;
   unsigned int sent = 0;
   do {
-    const ssize_t n = ::send(m_socket, msg.data() + sent, msg.length() - sent, 0);
+    const ssize_t n = ::send(m_socket, val.data() + sent, val.length() - sent, 0);
     if (n == -1) {
       LOG(WARN) << "Send Failed: " << my_strerror(errno);
       break;
     }
     sent += n;
-    LOG(TRACE) << "Sent " << n << " bytes (overall " << sent << "/" << msg.length() << ")";
-  } while (sent < msg.length() && full_msg);
-  if (sent < msg.length()) {
-    LOG(WARN) << "Failed to send full message (sent " << sent << " of " << msg.length() << ")";
+    LOG(TRACE) << "Sent " << n << " bytes (overall " << sent << "/" << val.length() << ")";
+  } while (sent < val.length() && full_msg);
+  if (sent < val.length()) {
+    LOG(WARN) << "Failed to send full message (sent " << sent << " of " << val.length() << ")";
   }
-  return sent == msg.length();
+  return sent == val.length();
 }
 
 std::string TCPSocket::recv() const {
@@ -167,7 +169,8 @@ bool TCPSocket::setTimeout(unsigned int timeout_ms, int option) {
     return true;
   }
 
-  struct timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = timeout_ms * 1000 };
+  struct timeval tv{.tv_sec  = timeout_ms / 1000,
+                    .tv_usec = static_cast<__suseconds_t>(timeout_ms) * 1000};
   LOG(DEBUG) << "Setting timeout (fd: " << m_socket << ") to " << tv.tv_sec << "." << tv.tv_usec;
   if (setsockopt(m_socket, SOL_SOCKET, option, &tv, sizeof(tv)) == -1) {
     LOG(WARN) << "Unable to setsockopt for timeout: " << my_strerror(errno);
@@ -305,19 +308,24 @@ std::string SocketStream::nextWord() {
 std::string SocketStream::nextLine(bool skip_whitespace) {
   grab_if_needed(m_pos);
   if (skip_whitespace) {
-    while (m_pos < m_buffer.length() && isspace(m_buffer[m_pos])) { grab_if_needed(++m_pos); }
+    while (m_pos < m_buffer.length() && (isspace(m_buffer[m_pos]) != 0)) {
+      grab_if_needed(++m_pos);
+    }
   }
   const unsigned int start_pos = m_pos;
   while (m_pos < m_buffer.length() && m_buffer[m_pos] != '\n') { grab_if_needed(++m_pos); }
   std::string line = m_buffer.substr(start_pos, (m_pos++) - start_pos);
-  if (line.back() == '\r') { line.pop_back(); } // HTTP uses CRLF
+  if (line.back() == '\r') { line.pop_back(); }    // HTTP uses CRLF
   return line;
 }
 
 std::string SocketStream::remaining() {
   grab_if_needed(m_pos);
   const unsigned int start_pos = m_pos;
-  while (m_pos < m_buffer.length()) { m_pos = m_buffer.length(); grab_if_needed(m_pos); }
+  while (m_pos < m_buffer.length()) {
+    m_pos = m_buffer.length();
+    grab_if_needed(m_pos);
+  }
   return m_buffer.substr(start_pos);
 }
 

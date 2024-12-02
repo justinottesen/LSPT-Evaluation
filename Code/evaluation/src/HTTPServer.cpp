@@ -1,16 +1,23 @@
 #include "HTTPServer.h"
 
+#include <asm-generic/socket.h>
 #include <poll.h>
 #include <sys/poll.h>
 
 #include <array>
+#include <cctype>
 #include <cerrno>
 #include <cstdint>
 #include <cstdlib>
+#include <exception>
 #include <nlohmann/json.hpp>
 #include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
 
 #include "Logger.h"
+#include "TCPSocket.h"
 #include "Util.h"
 
 std::string to_string(const HTTPRequest& request) {
@@ -40,11 +47,11 @@ HTTPResponse::HTTPResponse(unsigned int code_, std::string_view status_,
 
 HTTPResponse HTTPResponse::makeErrorResponse(unsigned int code_, std::string_view status_,
                                              std::string_view msg) {
-  nlohmann::json resp_body = {
+  const nlohmann::json resp_body = {
       {  "error", status_},
       {"message",     msg}
   };
-  return HTTPResponse(code_, status_, resp_body);
+  return {code_, status_, resp_body};
 }
 
 std::string to_string(const HTTPResponse& response) {
@@ -189,20 +196,20 @@ std::optional<HTTPRequest> HTTPServer::parseRequest(TCPSocket& sock) {
   LOG(TRACE) << "METHOD: " << request.method << " RESOURCE: " << request.resource
              << " VERSION: " << request.version;
   std::string line = ss.nextLine();
-  for (char c : line) {
-    if (!isspace(c)) {
+  for (const char c : line) {
+    if (isspace(c) == 0) {
       LOG(TRACE) << "Extra chars at end of first line: " << line;
       return std::nullopt;
     }
   }
   while (ss.hasNext() && !(line = ss.nextLine()).empty()) {
-    std::size_t delim_pos = line.find(':');
+    const std::size_t delim_pos = line.find(':');
     if (delim_pos == std::string::npos) { break; }
 
     std::string header = line.substr(0, delim_pos);
-    for (char& c : header) { c = std::tolower(c); }
+    for (char& c : header) { c = static_cast<char>(std::tolower(c)); }
     std::size_t val_start = delim_pos + 1;
-    while (isspace(line[val_start])) { val_start++; }
+    while (isspace(line[val_start]) != 0) { val_start++; }
     request.headers[header] = line.substr(val_start);
     LOG(TRACE) << "HEADER: " << header << " - VALUE: " << request.headers[header];
   }
@@ -235,13 +242,13 @@ std::optional<HTTPResponse> HTTPServer::parseResponse(TCPSocket& sock) {
              << " STATUS: " << response.status;
   std::string line;
   while (ss.hasNext() && !(line = ss.nextLine()).empty()) {
-    std::size_t delim_pos = line.find(':');
+    const std::size_t delim_pos = line.find(':');
     if (delim_pos == std::string::npos) { break; }
 
     std::string header = line.substr(0, delim_pos);
-    for (char& c : header) { c = std::tolower(c); }
+    for (char& c : header) { c = static_cast<char>(std::tolower(c)); }
     std::size_t val_start = delim_pos + 1;
-    while (isspace(line[val_start])) { val_start++; }
+    while (isspace(line[val_start]) != 0) { val_start++; }
     response.headers[header] = line.substr(val_start);
     LOG(TRACE) << "HEADER: " << header << " - VALUE: " << response.headers[header];
   }

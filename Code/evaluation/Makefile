@@ -15,7 +15,7 @@ CXXFLAGS = -std=c++20
 # C/C++ flags
 CPPFLAGS = -Wall -Wextra -Werror -g -DREUSEADDR # REUSEADDR defined locally for testing, we probably don't want this for release
 # Includes
-INCOUDES = -I../sqlite -I../nlohmann_json/single_include
+INCLUDES = -I../sqlite -I../nlohmann_json/single_include
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags

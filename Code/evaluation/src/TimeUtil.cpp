@@ -16,7 +16,7 @@ std::string current_time(bool path) {
   localtime_r(&time_value.tv_sec, &time_struct);
   std::ostringstream output_stream;
   output_stream << std::put_time(&time_struct, "%F %T") << "." << std::setw(3) << std::setfill('0')
-                << time_value.tv_usec / 1000;    // NOLINT(*-magic-numbers)
+                << time_value.tv_usec / 1000;
   std::string date_str = output_stream.str();
   if (path) {
     std::ranges::replace(date_str, ' ', '_');
