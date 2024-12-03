@@ -11,6 +11,7 @@
 #include <shared_mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "TimeUtil.h"
 
@@ -18,13 +19,18 @@ static constexpr unsigned int LEVEL_FMT_WIDTH   = 8;
 static constexpr unsigned int TIME_FMT_WIDTH    = 25;
 static constexpr unsigned int FULL_HEADER_WIDTH = 100;
 
-Logger::Logger(LogLevel level, const std::filesystem::path& path, int line, std::string_view function)
+Logger::Logger(LogLevel level, const std::filesystem::path& path, int line,
+               std::string_view function)
     : m_level(level) {
   m_buffer << "[" << std::setw(LEVEL_FMT_WIDTH) << toStr(level) << "] " << path.filename().c_str()
            << ":" << line << " in " << function << "(): ";
 }
 
-Logger::~Logger() { Workers::log(m_level, m_buffer.str()); }
+Logger::~Logger() {
+  std::string msg_str = m_buffer.str();
+  std::erase(msg_str, '\r');
+  Workers::log(m_level, msg_str);
+}
 
 void Logger::Workers::addWorker(const std::filesystem::path& path, LogLevel level) {
   const std::lock_guard<std::shared_mutex> lock(mutex());
@@ -53,6 +59,7 @@ void Logger::Workers::log(LogLevel level, std::string_view msg) {
 void Logger::Workers::Worker::log(LogLevel level, std::string_view msg) {
   const std::lock_guard<std::mutex> lock(m_mutex);
   if (level > m_level) { return; }
+  while (msg.back() == '\n') { msg.remove_suffix(1); }
   logTime();
   stream() << log_color(level);
   std::size_t start = 0;
@@ -60,7 +67,7 @@ void Logger::Workers::Worker::log(LogLevel level, std::string_view msg) {
     std::size_t end = msg.find('\n', start);
     if (end == std::string::npos) { end = msg.size(); }
     if (start > 0) { stream() << std::string(TIME_FMT_WIDTH + LEVEL_FMT_WIDTH + 3, ' ') << "-> "; }
-    stream() << msg.substr(start, end + 1);
+    stream() << msg.substr(start, end - start + 1);
     start = end + 1;
   }
   stream() << reset_color() << '\n';

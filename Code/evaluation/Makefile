@@ -13,7 +13,9 @@ CFLAGS =
 # C++ flags
 CXXFLAGS = -std=c++20
 # C/C++ flags
-CPPFLAGS = -Wall -Wextra -Werror -g -I../sqlite -I../nlohmann_json/single_include
+CPPFLAGS = -Wall -Wextra -Werror -g -DREUSEADDR # REUSEADDR defined locally for testing, we probably don't want this for release
+# Includes
+INCLUDES = -I../sqlite -I../nlohmann_json/single_include
 # dependency-generation flags
 DEPFLAGS = -MMD -MP
 # linker flags
@@ -39,9 +41,9 @@ OBJECTS := \
 DEPENDS := $(OBJECTS:.o=.d)
 
 # compile C source
-COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) -c -o $@
+COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) -c -o $@
 # compile C++ source
-COMPILE.cxx = $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c -o $@
+COMPILE.cxx = $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(INCLUDES) -c -o $@
 # link objects
 LINK.o = $(LD) $(LDFLAGS) $(LDLIBS) $(OBJECTS) -o $@
 

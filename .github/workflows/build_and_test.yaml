@@ -35,11 +35,7 @@ jobs:
       run: ./setup_repo.sh no-install-checks
       working-directory: Code
 
-    - name: Compile Unit Tests
-      run: make
-      working-directory: Code/unittest
-    
-    - name: Run Unit Tests
+    - name: Compile & Run Unit Tests
       run: make run
       working-directory: Code/unittest
   

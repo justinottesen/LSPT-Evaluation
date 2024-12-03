@@ -100,7 +100,7 @@ Content-Type: application/json
 Content-Length: <Length of JSON body below>
 
 {
-  "query_ID": <Unique identifier of the query>
+  "query_ID": <Unique identifier of the query>,
   "raw_query": <The exact query the user entered>,
   "results": [ <A list of results shown to the user> ],
   "clicked": <Index of the result the user chose in the above list>,

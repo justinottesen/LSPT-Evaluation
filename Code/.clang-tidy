@@ -9,10 +9,15 @@ Checks: 'bugprone-*,
          portability-*,
          readability-*,
          
-         -modernize-use-trailing-return-type'
+         -modernize-use-trailing-return-type,
+         -cppcoreguidelines-avoid-do-while,
+         -readability-identifier-length,
+         -*magic-numbers'
 CheckOptions:
   - key: lang.std
     value: 'c++20'
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 50
 ExtraArgs: [ '-Isqlite', '-Inlohmann_json/single_include' ]
 HeaderFilterRegex: '^(?!sqlite|nlohmann_json/single_include).*$'
 WarningsAsErrors: '*'
