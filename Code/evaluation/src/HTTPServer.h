@@ -40,6 +40,51 @@ struct HTTPResponse {
 
 std::string to_string(const HTTPResponse& response);
 
+class HTTPWorker {
+ public:
+  HTTPWorker(TCPSocket&& sock)
+      : m_socket(std::move(sock)) {}
+
+  void run();
+
+  static std::optional<HTTPRequest>  parseRequest(TCPSocket& sock);
+  static std::optional<HTTPResponse> parseResponse(TCPSocket& sock);
+
+  using Handler = HTTPResponse (HTTPWorker::*)(const HTTPRequest& request) const;
+  static Handler handlerMapper(std::string_view resource) {
+    const std::unordered_map<std::string_view, Handler> map = {
+        {        "/v0/GetAutofill",         &HTTPWorker::v0getAutofill},
+        {         "/v0/GetQueryID",          &HTTPWorker::v0getQueryID},
+        {"/v0/ReportSearchResults", &HTTPWorker::v0reportSearchResults},
+        {     "/v0/SubmitFeedback",      &HTTPWorker::v0submitFeedback},
+        {       "/v0/GetQueryData",        &HTTPWorker::v0getQueryData},
+        {      "/v0/ReportMetrics",       &HTTPWorker::v0reportMetrics},
+    };
+    return (map.contains(resource) ? map.at(resource) : &HTTPWorker::notFound);
+  }
+
+  HTTPResponse v0getAutofill(const HTTPRequest& /* request */) const {
+    const auto suggestions = {"Why is RPI so cool?", "I love RPI", "Best Food Near RPI"};
+    return {200, "OK", {{"suggestions", suggestions}}};
+  }
+  HTTPResponse v0getQueryID(const HTTPRequest& /* request */) const {
+    static unsigned int ID = 0;
+    return {200, "OK", {{"query_ID", ID++}}};
+  }
+  HTTPResponse v0reportSearchResults(const HTTPRequest& /* request */) const { return {200, "OK"}; }
+  HTTPResponse v0submitFeedback(const HTTPRequest& /* request */) const { return {200, "OK"}; }
+  HTTPResponse v0getQueryData(const HTTPRequest& /* request */) const {
+    return {200, "OK", {{"queries", nlohmann::json::array()}}};
+  }
+  HTTPResponse v0reportMetrics(const HTTPRequest& /* request */) const { return {200, "OK"}; }
+  HTTPResponse notFound(const HTTPRequest& /* request */) const {
+    return HTTPResponse::makeErrorResponse(404, "Not Found", "Resource (API function) not found");
+  }
+
+ private:
+  TCPSocket m_socket;
+};
+
 class HTTPServer {
  public:
   HTTPServer(uint16_t listener_port, int backlog_size)
@@ -47,11 +92,6 @@ class HTTPServer {
       , m_backlog_size(backlog_size) {}
   bool init();
   bool run(int shutdown_fd);
-
-  void handle_client(TCPSocket& client_sock);
-
-  static std::optional<HTTPRequest>  parseRequest(TCPSocket& sock);
-  static std::optional<HTTPResponse> parseResponse(TCPSocket& sock);
 
  private:
   uint16_t m_listener_port;

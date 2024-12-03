@@ -15,6 +15,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #include "Logger.h"
 #include "TCPSocket.h"
@@ -122,30 +123,31 @@ bool HTTPServer::run(int shutdown_fd) {
     }
 
     // TODO: Make this multithreaded
-    handle_client(client_socket.value());
+    HTTPWorker worker(std::move(client_socket.value()));
+    worker.run();
   }
   return true;
 }
 
-void HTTPServer::handle_client(TCPSocket& sock) {
-  sock.setTimeout<SO_RCVTIMEO>(500);
-  std::optional<HTTPRequest> request_opt = parseRequest(sock);
+void HTTPWorker::run() {
+  m_socket.setTimeout<SO_RCVTIMEO>(10);
+  std::optional<HTTPRequest> request_opt = HTTPWorker::parseRequest(m_socket);
 
   if (!request_opt.has_value()) {
-    sock.send(HTTPResponse::makeErrorResponse(400, "Bad Request", "Error parsing request."));
+    m_socket.send(HTTPResponse::makeErrorResponse(400, "Bad Request", "Error parsing request."));
     return;
   }
 
   HTTPRequest& request = request_opt.value();
   if (request.version != "HTTP/1.1") {
-    sock.send(HTTPResponse::makeErrorResponse(505, "HTTP Version Not Supported",
-                                              "HTTP/1.1 Must be Used."));
+    m_socket.send(HTTPResponse::makeErrorResponse(505, "HTTP Version Not Supported",
+                                                  "HTTP/1.1 Must be Used."));
     return;
   }
 
   if (!request.body.empty()) {
     if (!request.headers.contains("content-length")) {
-      sock.send(HTTPResponse::makeErrorResponse(
+      m_socket.send(HTTPResponse::makeErrorResponse(
           411, "Length Required",
           "Content-Length header must be specified when sending a request body"));
       return;
@@ -155,14 +157,14 @@ void HTTPServer::handle_client(TCPSocket& sock) {
     try {
       content_length = std::stoul(request.headers["content-length"]);
     } catch (const std::exception& e) {
-      sock.send(HTTPResponse::makeErrorResponse(
+      m_socket.send(HTTPResponse::makeErrorResponse(
           400, "Bad Request",
           "Specified content length (" + request.headers["content-length"] + ") is invalid"));
       return;
     }
 
     if (content_length != request.body.length()) {
-      sock.send(HTTPResponse::makeErrorResponse(
+      m_socket.send(HTTPResponse::makeErrorResponse(
           400, "Bad Request",
           "Provided content length " + request.headers["content-length"]
               + " does not match actual content length " + std::to_string(request.body.length())));
@@ -170,17 +172,10 @@ void HTTPServer::handle_client(TCPSocket& sock) {
     }
   }
 
-  if (!m_handlers.contains(request.resource)) {
-    sock.send(
-        HTTPResponse::makeErrorResponse(404, "Not Found", "Resource (API function) not found"));
-    return;
-  }
-
-  // Maybe multithreaded starts here by creating a thread?
-  m_handlers.at(request.resource)(sock, request);
+  m_socket.send((this->*HTTPWorker::handlerMapper(request.resource))(request));
 }
 
-std::optional<HTTPRequest> HTTPServer::parseRequest(TCPSocket& sock) {
+std::optional<HTTPRequest> HTTPWorker::parseRequest(TCPSocket& sock) {
   LOG(DEBUG) << "Parsing HTTP Response on sock " << sock.fd();
   SocketStream ss(sock);
 
@@ -220,7 +215,7 @@ std::optional<HTTPRequest> HTTPServer::parseRequest(TCPSocket& sock) {
   return request;
 }
 
-std::optional<HTTPResponse> HTTPServer::parseResponse(TCPSocket& sock) {
+std::optional<HTTPResponse> HTTPWorker::parseResponse(TCPSocket& sock) {
   LOG(DEBUG) << "Parsing HTTP Response on sock " << sock.fd();
   SocketStream ss(sock);
 
