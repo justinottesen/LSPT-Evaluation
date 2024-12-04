@@ -9,7 +9,7 @@ TEST(ParseHTTPTest, ParseEmptyHTTPRequest) {
   std::pair<TCPSocket, TCPSocket> sockets = get_server_and_client(PORT_NUM);
   EXPECT_TRUE(sockets.first.setTimeout<SO_RCVTIMEO>(100));
 
-  std::optional<HTTPRequest> request = HTTPServer::parseRequest(sockets.first);
+  std::optional<HTTPRequest> request = HTTPWorker::parseRequest(sockets.first);
   EXPECT_FALSE(request.has_value());
 }
 
@@ -24,7 +24,7 @@ TEST(ParseHTTPTest, ParseExampleGetAutofill) {
       "\r\n";
   sockets.second.send(getAutofill);
 
-  std::optional<HTTPRequest> request_op = HTTPServer::parseRequest(sockets.first);
+  std::optional<HTTPRequest> request_op = HTTPWorker::parseRequest(sockets.first);
   EXPECT_TRUE(request_op.has_value());
 
   HTTPRequest request = request_op.value();
@@ -58,7 +58,7 @@ TEST(ParseHTTPTest, ParseExampleReportSearchResults) {
       "}";
   sockets.second.send(getAutofill);
 
-  std::optional<HTTPRequest> request_op = HTTPServer::parseRequest(sockets.first);
+  std::optional<HTTPRequest> request_op = HTTPWorker::parseRequest(sockets.first);
   EXPECT_TRUE(request_op.has_value());
 
   HTTPRequest request = request_op.value();
@@ -98,7 +98,7 @@ TEST(HTTPTest, ToStringSendAndReceive) {
 
   sockets.second.send(to_string(client_request));
 
-  std::optional<HTTPRequest> request_op = HTTPServer::parseRequest(sockets.first);
+  std::optional<HTTPRequest> request_op = HTTPWorker::parseRequest(sockets.first);
   EXPECT_TRUE(request_op.has_value());
 
   HTTPRequest server_request = request_op.value();
@@ -283,7 +283,7 @@ TEST(HTTPTest, BadlyFormattedRequest) {
 
   EXPECT_TRUE(client.send("Not an HTTP Request"));
 
-  std::optional<HTTPResponse> response_opt = HTTPServer::parseResponse(client);
+  std::optional<HTTPResponse> response_opt = HTTPWorker::parseResponse(client);
 
   EXPECT_TRUE(response_opt.has_value());
 
@@ -320,7 +320,7 @@ TEST(HTTPTest, BadHTTPVersion) {
 
   EXPECT_TRUE(client.send(request));
 
-  std::optional<HTTPResponse> response_opt = HTTPServer::parseResponse(client);
+  std::optional<HTTPResponse> response_opt = HTTPWorker::parseResponse(client);
 
   EXPECT_TRUE(response_opt.has_value());
 
@@ -363,7 +363,7 @@ TEST(HTTPTest, BodyNoContentLength) {
 
   EXPECT_TRUE(client.send(request));
 
-  std::optional<HTTPResponse> response_opt = HTTPServer::parseResponse(client);
+  std::optional<HTTPResponse> response_opt = HTTPWorker::parseResponse(client);
 
   EXPECT_TRUE(response_opt.has_value());
 
@@ -408,7 +408,7 @@ TEST(HTTPTest, BodyBadContentLength) {
 
   EXPECT_TRUE(client.send(request));
 
-  std::optional<HTTPResponse> response_opt = HTTPServer::parseResponse(client);
+  std::optional<HTTPResponse> response_opt = HTTPWorker::parseResponse(client);
 
   EXPECT_TRUE(response_opt.has_value());
 
@@ -453,7 +453,7 @@ TEST(HTTPTest, BodyWrongContentLength) {
 
   EXPECT_TRUE(client.send(request));
 
-  std::optional<HTTPResponse> response_opt = HTTPServer::parseResponse(client);
+  std::optional<HTTPResponse> response_opt = HTTPWorker::parseResponse(client);
 
   EXPECT_TRUE(response_opt.has_value());
 
@@ -491,7 +491,7 @@ TEST(HTTPTest, BadResource) {
 
   EXPECT_TRUE(client.send(request));
 
-  std::optional<HTTPResponse> response_opt = HTTPServer::parseResponse(client);
+  std::optional<HTTPResponse> response_opt = HTTPWorker::parseResponse(client);
 
   EXPECT_TRUE(response_opt.has_value());
 
