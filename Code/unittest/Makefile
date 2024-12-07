@@ -11,7 +11,7 @@ test_http_SOURCES = test_http.cpp $(EVAL_SRC)/HTTPServer.cpp $(EVAL_SRC)/TCPSock
 CXX = clang++
 LD = clang++
 CXXFLAGS = -std=c++20
-CPPFLAGS = -Wall -Wextra -Werror -g -DREUSEADDR # REUSEADDR defined locally for testing, we probably don't want this for release
+CPPFLAGS = -Wall -Wextra -Werror -g -DREUSEADDR -DUNITTEST
 INCLUDES = -I../sqlite -I../nlohmann_json/single_include -I../evaluation/src -I../googletest/googletest/include -I../googletest/googlemock/include
 LDLIBS = -lgtest_main -lgtest
 LDFLAGS = -L../googletest/build/lib
