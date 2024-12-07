@@ -9,11 +9,44 @@
 // TODO: HEADERS SHOULD NOT CHANGE ORDER (unordered_map is a problem here)
 
 struct HTTPRequest {
+  enum Method { GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH, UNKNOWN };
+
+  static std::string methodToString(Method method) {
+    switch (method) {
+      case GET:     return "GET";
+      case HEAD:    return "HEAD";
+      case POST:    return "POST";
+      case PUT:     return "PUT";
+      case DELETE:  return "DELETE";
+      case CONNECT: return "CONNECT";
+      case OPTIONS: return "OPTIONS";
+      case TRACE:   return "TRACE";
+      case PATCH:   return "PATCH";
+      default:      LOG(WARN) << "Encountered unknown HTTP Method: " << method; return "<UNKNOWN>";
+    }
+  }
+
+  static Method stringToMethod(std::string_view str) {
+    if (str == "GET") { return GET; }
+    if (str == "HEAD") { return HEAD; }
+    if (str == "POST") { return POST; }
+    if (str == "PUT") { return PUT; }
+    if (str == "DELETE") { return DELETE; }
+    if (str == "CONNECT") { return CONNECT; }
+    if (str == "OPTIONS") { return OPTIONS; }
+    if (str == "TRACE") { return TRACE; }
+    if (str == "PATCH") { return PATCH; }
+    LOG(WARN) << "Encountered unknown HTTP method string: " << str;
+    return UNKNOWN;
+  }
+
   HTTPRequest() = default;
 
-  HTTPRequest(std::string_view method, std::string_view resource, const nlohmann::json& body);
-  
-  std::string                                  method;
+  HTTPRequest(Method method, std::string_view resource, const nlohmann::json& body);
+
+  HTTPRequest(Method method, std::string_view resource);
+
+  Method                                       method;
   std::string                                  resource;
   std::string                                  version;
   std::unordered_map<std::string, std::string> headers;
@@ -76,13 +109,18 @@ class HTTPWorker {
     m_socket.send(HTTPResponse{200, "OK", {{"query_ID", ID++}}});
   }
   void v0reportSearchResults(const HTTPRequest& request) const;
-  void v0submitFeedback(const HTTPRequest& /* request */) const { m_socket.send(HTTPResponse{200, "OK"}); }
+  void v0submitFeedback(const HTTPRequest& /* request */) const {
+    m_socket.send(HTTPResponse{200, "OK"});
+  }
   void v0getQueryData(const HTTPRequest& /* request */) const {
     m_socket.send(HTTPResponse{200, "OK", {{"queries", nlohmann::json::array()}}});
   }
-  void v0reportMetrics(const HTTPRequest& /* request */) const { m_socket.send(HTTPResponse{200, "OK"}); }
+  void v0reportMetrics(const HTTPRequest& /* request */) const {
+    m_socket.send(HTTPResponse{200, "OK"});
+  }
   void notFound(const HTTPRequest& /* request */) const {
-    m_socket.send(HTTPResponse::makeErrorResponse(404, "Not Found", "Resource (API function) not found"));
+    m_socket.send(
+        HTTPResponse::makeErrorResponse(404, "Not Found", "Resource (API function) not found"));
   }
 
  private:

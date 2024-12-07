@@ -4,12 +4,13 @@
 #include <asm-generic/socket.h>
 #include <bits/types.h>
 #include <bits/types/struct_timeval.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <netdb.h>
 
+#include <array>
 #include <cctype>
 #include <cerrno>
 #include <cstdint>
@@ -287,26 +288,28 @@ bool TCPSocket::connect(const char* ip, uint16_t port) const {
 }
 
 std::string TCPSocket::getIP(const std::string& domain, uint16_t port) {
-  struct addrinfo hints, *res;
+  struct addrinfo  hints{};
+  struct addrinfo* res = nullptr;
   memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
+  hints.ai_family   = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
 
-  std::string port_str = std::to_string(port);
+  const std::string port_str = std::to_string(port);
 
-  int status = 0;
-  if ((status = getaddrinfo(domain.c_str(), port_str.c_str(), &hints, &res)) != 0) {
+  const int status = getaddrinfo(domain.c_str(), port_str.c_str(), &hints, &res);
+  if (status != 0) {
     LOG(ERROR) << "Error in `getaddrinfo` - Code: " << status << " (see `man getaddrinfo`)";
     freeaddrinfo(res);
     return "";
   }
 
   if (res != nullptr) {
-    char ipstr[INET_ADDRSTRLEN];
-    struct sockaddr_in *ipv4 = (struct sockaddr_in*)res->ai_addr;
-    inet_ntop(res->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
+    std::array<char, INET_ADDRSTRLEN> ipstr{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    auto* ipv4 = reinterpret_cast<sockaddr_in*>(res->ai_addr);
+    inet_ntop(res->ai_family, &(ipv4->sin_addr), ipstr.data(), sizeof(ipstr));
     freeaddrinfo(res);
-    return ipstr;
+    return {ipstr.begin(), ipstr.end()};
   }
 
   freeaddrinfo(res);
