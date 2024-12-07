@@ -49,6 +49,8 @@ class TCPSocket {
   // Client Side Functions
   bool connect(const char* ip, uint16_t port) const;
 
+  static std::string getIP(const std::string& domain, uint16_t port);
+
  private:
   int m_socket;
 

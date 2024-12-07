@@ -21,6 +21,14 @@
 #include "TCPSocket.h"
 #include "Util.h"
 
+HTTPRequest::HTTPRequest(std::string_view method_, std::string_view resource_, const nlohmann::json& body_) : method(method_), resource(resource_), version("HTTP/1.1") {
+  body = body_.dump();
+  headers = {
+      {  "Content-Type",            "application/json"},
+      {"Content-Length", std::to_string(body.length())}
+  };
+}
+
 std::string to_string(const HTTPRequest& request) {
   std::ostringstream ss;
   ss << request.method << " " << request.resource << " " << request.version << "\r\n";
@@ -172,7 +180,7 @@ void HTTPWorker::run() {
     }
   }
 
-  m_socket.send((this->*HTTPWorker::handlerMapper(request.resource))(request));
+  (this->*HTTPWorker::handlerMapper(request.resource))(request);
 }
 
 std::optional<HTTPRequest> HTTPWorker::parseRequest(TCPSocket& sock) {
@@ -254,3 +262,63 @@ std::optional<HTTPResponse> HTTPWorker::parseResponse(TCPSocket& sock) {
   return response;
 }
 
+void HTTPWorker::v0reportSearchResults(const HTTPRequest& request) const {
+  if (request.method != "POST") {
+    m_socket.send(HTTPResponse::makeErrorResponse(405, "Method Not Allowed", "Use POST for this API call"));
+    return;
+  }
+
+  if (!request.headers.contains("content-type") || request.headers.at("content-type") != "application/json") {
+    m_socket.send(HTTPResponse::makeErrorResponse(400, "Bad Request", "Missing / Incorrect `Content-Type` header (expected `application/json`)"));
+    return;
+  }
+
+  std::string clicked_link = "";
+  try
+  {
+    nlohmann::json body = nlohmann::json::parse(request.body);
+    std::vector<std::string> results = body.at("results");
+    unsigned int clicked = body.at("clicked");
+    clicked_link = results.at(clicked);
+  }
+  catch(const std::exception& e)
+  {
+    LOG(ERROR) << "Exception in json parsing: " << e.what();
+    m_socket.send(HTTPResponse::makeErrorResponse(400, "Bad Request", "Improper format of request body."));
+    return;
+  }
+
+  // Respond before continuing to propagate data
+  if (!m_socket.send(HTTPResponse(200, "OK"))) {
+    LOG(ERROR) << "Failed to send response";
+  }
+
+  if (!clicked_link.empty()) {
+    constexpr const char* LINK_ANALYSIS_DOMAIN = "lspt-link-analysis.cs.rpi.edu";
+    constexpr uint16_t LINK_ANALYSIS_PORT = 1234;
+
+    std::string link_analysis_ip = TCPSocket::getIP(LINK_ANALYSIS_DOMAIN, LINK_ANALYSIS_PORT);
+
+    TCPSocket link_analysis_sock;
+
+    if (!link_analysis_sock.create()) {
+      LOG(ERROR) << "Failed to create socket to forward to Link Analysis";
+      return;
+    }
+    if (!link_analysis_sock.connect(link_analysis_ip.c_str(), LINK_ANALYSIS_PORT)) {
+      LOG(ERROR) << "Failed to connect to Link Analysis";
+      return;
+    }
+    
+    nlohmann::json body = {
+      {"list_of_clicked_links", {clicked_link}},
+      {"click_count", {1}}
+    };
+    HTTPRequest request("POST", "/evaluation/update_metadata", body);
+    request.headers["Host"] = "lspt-link-analysis.cs.rpi.edu:1234";
+
+    if (!link_analysis_sock.send(request)) {
+      LOG(ERROR) << "Failed to send search results to Link Analysis";
+    }
+  }
+}

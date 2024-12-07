@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <netdb.h>
 
 #include <cctype>
 #include <cerrno>
@@ -282,7 +283,34 @@ bool TCPSocket::connect(const char* ip, uint16_t port) const {
   } else {
     LOG(DEBUG) << "Connect succeeded (Address: " << ip << ":" << port << ")";
   }
-  return ret == 0;
+  return ret != -1;
+}
+
+std::string TCPSocket::getIP(const std::string& domain, uint16_t port) {
+  struct addrinfo hints, *res;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+
+  std::string port_str = std::to_string(port);
+
+  int status = 0;
+  if ((status = getaddrinfo(domain.c_str(), port_str.c_str(), &hints, &res)) != 0) {
+    LOG(ERROR) << "Error in `getaddrinfo` - Code: " << status << " (see `man getaddrinfo`)";
+    freeaddrinfo(res);
+    return "";
+  }
+
+  if (res != nullptr) {
+    char ipstr[INET_ADDRSTRLEN];
+    struct sockaddr_in *ipv4 = (struct sockaddr_in*)res->ai_addr;
+    inet_ntop(res->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
+    freeaddrinfo(res);
+    return ipstr;
+  }
+
+  freeaddrinfo(res);
+  return "";
 }
 
 bool SocketStream::hasNext() {
