@@ -44,23 +44,23 @@
 
 \subsubsection*{Internal Success Metrics:}
 
-\medskip\subsubsection*{Scalability:}
+\subsubsection*{Scalability:}
 This success metric measured scalability, comparing the time it takes for a query 
 to run based on the component's storage and the number of users using the search 
 engine. Our component is very scalable in terms of storage, as it is a simple 
-implementation. However, as it runs in one thread, it does not allow multiple 
-users to utilize it. So, we have mixed results in terms of scalability, and if we 
+implementation and doesn't store anything. However, as it runs in one thread, the
+number of concurrent users is limited. So, we have mixed results in terms of scalability, and if we 
 implemented multiple threads, then we would improve our scalability.
 
-\smallskip\subsubsection*{Testability:}
+\subsubsection*{Testability:}
 The evaluation component can measure testability by monitoring the total test 
 coverage and the success rate of the tests. Overall, our current testability is 
 low, as we still have multiple requirements that we aren't fulfilling 
-(accommodating multiple users, finding synonyms for autofill, accepting "right to 
-be forgotten"). The success metric will increase as components contribute more 
+(finding synonyms for autofill, accepting "right to 
+be forgotten", etc.). The success metric will increase as components contribute more 
 features to the search engine and create test cases for them.
 
-\smallskip\subsubsection*{Usability:}
+\subsubsection*{Usability:}
 The evaluation component can measure the overall usability of the SE based on the 
 feedback we receive from UI/UX. Although there isn't any negative feedback or bug 
 reports, there aren't enough people using the search engine and sending bugs to 
@@ -74,9 +74,9 @@ as well as more implementation on the component once the component is tested
 and works at higher scales.
 
 
-\bigskip\subsection*{External Success Metric:}
+\subsection*{External Success Metric:}
 
-\medskip\subsubsection*{Predictability:}
+\subsubsection*{Predictability:}
 The evaluation component can measure predictability by measuring how often the 
 autofill function is called before a query ID is generated. Currently, the get 
 autofill results are limited, and cannot be improved through user data unless 
@@ -85,7 +85,7 @@ used for predictability, so currently the predictability is low. The
 predictability will increase once we start having users utilize the search engine 
 and put their search history in the search engine.
 
-\smallskip\subsubsection*{Performance:}
+\subsubsection*{Performance:}
 Since the evaluation component sends out the query ID and receives the query ID at 
 the end of the query runtime, it can conduct performance tests on the overall 
 performance of the query runtime. Currently, our component connects with UI/UX,  
@@ -93,7 +93,7 @@ but UI/UX doesn't receive any results back yet. So, the performance is not
 working, which shows a low performance. Once UI/UX can return results, then we can 
 measure the performance more accurately.
 
-\smallskip\subsubsection*{Relevancy:}
+\subsubsection*{Relevancy:}
 The relevancy success metric refers to the position of the link clicked on by the 
 user. If the user clicks on the first few links, the search results are 
 considered relevant and would have a high score. However, if the user clicks on a 
