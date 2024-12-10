@@ -1,0 +1,56 @@
+Our component has all six of our promised APIs implemented with varying levels of completeness.
+
+\begin{center}
+    \begin{tabular}{ |c|c|c| } 
+     \hline
+     API Name & Implementation & Notes \\
+     \hline \hline
+     GetAutofill & Partial & Suggestions are currently hard-coded \\
+     GetQueryID & Full & Returns unique IDs, Not crash tolerant \\
+     ReportSearchResults & Minimal & Returns an "OK" \\
+     SubmitFeedback & Minimal & Returns an "OK" \\
+     GetQueryData & Partial & Respose is currently hard-coded \\
+     ReportMetrics & Minimal & Returns an "OK" \\
+     \hline
+    \end{tabular}
+\end{center}
+
+We have successfully been able to interface with 3 other components: UI/UX, Link Analysis, and DDS
+
+\subsection*{UI/UX}
+API Call: GetAutofill
+\\We were able to interface with one of the UI/UX teams through this API, with the input matching the spec, but the output is currently hard-coded to always return the same thing.
+\smallskip
+\\API Call: GetQueryId
+\\This API is fully implemented and correctly returns a unique query ID whenever it is called.
+
+\subsection*{Link Analysis}
+API Call: ReportSearchResults
+\\Link Analysis is able to call this function and receives a respose. There are no actual results, therfore they simly receive an "OK".
+
+\subsection*{Doc Data Store}
+API Call: ReportMetrics
+\\We are able to receive metrics from them and return an "OK". We do not actually store these metrics.
+
+% void v0getAutofill(const HTTPRequest& /* request */) const {
+% const auto suggestions = {"Why is RPI so cool?", "I love RPI", "Best Food Near RPI"};
+% m_socket.send(HTTPResponse{200, "OK", {{"suggestions", suggestions}}});
+% }
+% void v0getQueryID(const HTTPRequest& /* request */) const {
+% static unsigned int ID = 0;
+% m_socket.send(HTTPResponse{200, "OK", {{"query_ID", ID++}}});
+% }
+% void v0reportSearchResults(const HTTPRequest& request) const;
+% void v0submitFeedback(const HTTPRequest& /* request */) const {
+% m_socket.send(HTTPResponse{200, "OK"});
+% }
+% void v0getQueryData(const HTTPRequest& /* request */) const {
+% m_socket.send(HTTPResponse{200, "OK", {{"queries", nlohmann::json::array()}}});
+% }
+% void v0reportMetrics(const HTTPRequest& /* request */) const {
+% m_socket.send(HTTPResponse{200, "OK"});
+% }
+% void notFound(const HTTPRequest& /* request */) const {
+% m_socket.send(
+%     HTTPResponse::makeErrorResponse(404, "Not Found", "Resource (API function) not found"));
+% }
