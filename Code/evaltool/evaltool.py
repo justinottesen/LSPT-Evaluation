@@ -107,24 +107,24 @@ if __name__ == "__main__":
   
   # ReportSearchResults
   parser_reportSearchResults = subparsers.add_parser("ReportSearchResults", help="Report search results to the database")
-  parser_reportSearchResults.add_argument("results_json", type=str, help = "The JSON body including all necessary information")
+  parser_reportSearchResults.add_argument("results_json", type=str, required=True, help = "The JSON body including all necessary information")
 
   # SubmitFeedback
   parser_submitFeedback = subparsers.add_parser("SubmitFeedback", help = "Submit user feedback to the component")
-  parser_submitFeedback.add_argument("feedback_json", type=str, help = "The JSON body including all necessary information")
+  parser_submitFeedback.add_argument("feedback_json", type=str, required=True, help = "The JSON body including all necessary information")
 
   # GetQeuryData
   parser_getQueryData = subparsers.add_parser("GetQueryData", help = "Gets the data associated with a query ID")
-  parser_getQueryData.add_argument("query_ID", type=int, help="The unique identifier of the query of interest")
+  parser_getQueryData.add_argument("query_ID", type=int, required=True, help="The unique identifier of the query of interest")
 
   # ReportMetrics
   parser_reportMetrics = subparsers.add_parser("ReportMetrics", help="Submit component metrics to the datastore")
-  parser_reportMetrics.add_argument("component", type=str, help="The name of the component submitting metrics")
-  parser_reportMetrics.add_argument("metrics_json", type=str, help = "The JSON body including all necessary information")
+  parser_reportMetrics.add_argument("component", required=True, type=str, help="The name of the component submitting metrics")
+  parser_reportMetrics.add_argument("metrics_json", required=True, type=str, help = "The JSON body including all necessary information")
 
   # Proxy
   parser_proxy = subparsers.add_parser("proxy", help = "Intercept, print, and relay all messages sent to the component")
-  parser_proxy.add_argument("proxy_port", type=int, help="Which port to listen for messages on")
+  parser_proxy.add_argument("proxy_port", type=int, required=True, help="Which port to listen for messages on")
 
   args = parser.parse_args()
 
@@ -138,4 +138,7 @@ if __name__ == "__main__":
     "proxy": cmd_proxy
   }
 
-  command_handler[args.command](args)
+  if args.command in command_handler:
+    command_handler[args.command](args)
+  else:
+    parser.print_help()
