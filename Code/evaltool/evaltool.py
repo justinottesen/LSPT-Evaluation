@@ -3,6 +3,7 @@
 import argparse
 import requests
 from typing import Any
+import json
 
 def get_url(ip: str, port: int, path: str):
   return f"http://{ip}:{port}{path}"
@@ -10,9 +11,9 @@ def get_url(ip: str, port: int, path: str):
 def make_request(ip: str, port: int, method: str, path: str, headers: dict[str, str] = {}, body: Any | None = None) -> None:
   url = get_url(ip, port, path)
 
-  response = requests.request(method, url, headers=headers, json=body)
+  response = requests.request(method, url, headers=headers, json=None if not body else json.loads(body))
 
-  print(response.status_code, response.reason)
+  print("HTTP/1.1", response.status_code, response.reason)
   for h, v in response.headers.items():
     print(f"{h}: {v}")
   print()

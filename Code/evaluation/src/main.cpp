@@ -16,16 +16,18 @@
 // Default values for arguments
 static constexpr uint16_t DEFAULT_LISTENER_PORT = 8080;
 static constexpr int      DEFAULT_BACKLOG_SIZE  = 10;
+static constexpr bool DEFAULT_LOG_CONSOLE = false;
 
 // Clang tidy hates getopt so it is a bit messy here
 // NOLINTBEGIN
 #include <getopt.h>
 
 // Command line option info
-constexpr const char*   short_options  = ":p:b:";
+constexpr const char*   short_options  = ":p:b:c";
 constexpr struct option long_options[] = {
     {   "port", required_argument, 0, 'p'},
     {"backlog", required_argument, 0, 'b'},
+    {"console", no_argument, 0, 'c'},
     {        0,                 0, 0,   0}
 };
 
@@ -89,7 +91,9 @@ bool set_up_signal_handling() {
 
 int main(int argc, char* argv[]) {
   // Enable logging
-  Logger::addConsole(TRACE);
+  if constexpr (DEFAULT_LOG_CONSOLE) {
+    Logger::addConsole(TRACE);
+  }
   Logger::addFile("log/info.log", INFO);
   Logger::addFile("log/trace.log", TRACE);
 
@@ -112,6 +116,11 @@ int main(int argc, char* argv[]) {
           if (backlog_size < 1) {
             LOG(CRITICAL) << "Negative value provided for backlog size (" << optarg << " -> "
                           << backlog_size << "), must be positive";
+          }
+          continue;
+        case 'c':
+          if constexpr (!DEFAULT_LOG_CONSOLE) {
+            Logger::addConsole(TRACE);
           }
           continue;
         case '?':
