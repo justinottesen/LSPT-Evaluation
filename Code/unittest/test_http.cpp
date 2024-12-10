@@ -33,7 +33,7 @@ TEST(ParseHTTPTest, ParseExampleGetAutofill) {
       {"num-suggestions",            "10"},
       {  "partial-query", "How do I make"}
   };
-  EXPECT_EQ(request.method, "GET");
+  EXPECT_EQ(request.method, HTTPRequest::GET);
   EXPECT_EQ(request.resource, "/v0/GetAutofill");
   EXPECT_EQ(request.version, "HTTP/1.1");
   EXPECT_EQ(request.headers, header_map);
@@ -67,7 +67,7 @@ TEST(ParseHTTPTest, ParseExampleReportSearchResults) {
       {  "content-type", "application/json"},
       {"content-length",              "176"}
   };
-  EXPECT_EQ(request.method, "POST");
+  EXPECT_EQ(request.method, HTTPRequest::POST);
   EXPECT_EQ(request.resource, "/v0/ReportSearchResults");
   EXPECT_EQ(request.version, "HTTP/1.1");
   EXPECT_EQ(request.headers, header_map);
@@ -78,25 +78,16 @@ TEST(HTTPTest, ToStringSendAndReceive) {
   std::pair<TCPSocket, TCPSocket> sockets = get_server_and_client(PORT_NUM);
   EXPECT_TRUE(sockets.first.setTimeout<SO_RCVTIMEO>(100));
 
-  HTTPRequest client_request{
-    .method = "POST",
-    .resource = "/v0/ReportSearchResults",
-    .version = "HTTP/1.1",
-    .headers = {
-      { "content-type", "application/json" },
-      { "content-length", "176" }
-    },
-    .body =
-      "{\r\n"
-      "  \"query_ID\": 1234\r\n"
-      "  \"raw_query\": \"How do I do a thing\"\r\n"
-      "  \"results\": [ \"link1\", \"link2\", \"link3\" ]\r\n"
-      "  \"clicked\": 1\r\n"
-      "  \"query_timestamp\": \"Tue, 29 Oct 2024 16:56:32 GMT\"\r\n"
-      "}"
-  };
+  HTTPRequest client_request(HTTPRequest::POST, "/v0/ReportSearchResults",
+                             {
+                                 {       "query_ID",                            1234},
+                                 {      "raw_query",           "How do I do a thing"},
+                                 {        "results",     {"link1", "link2", "link3"}},
+                                 {        "clicked",                               1},
+                                 {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
+  });
 
-  sockets.second.send(to_string(client_request));
+  sockets.second.send(client_request);
 
   std::optional<HTTPRequest> request_op = HTTPWorker::parseRequest(sockets.first);
   EXPECT_TRUE(request_op.has_value());
@@ -105,7 +96,6 @@ TEST(HTTPTest, ToStringSendAndReceive) {
   EXPECT_EQ(client_request.method, server_request.method);
   EXPECT_EQ(client_request.resource, server_request.resource);
   EXPECT_EQ(client_request.version, server_request.version);
-  EXPECT_EQ(client_request.headers, server_request.headers);
   EXPECT_EQ(client_request.body, server_request.body);
 }
 
@@ -221,40 +211,36 @@ TEST(HTTPTest, TestShutdown) {
 }
 
 class HTTPServerWrapper {
-  public:
-    HTTPServerWrapper(uint16_t port_num, int backlog) : m_server(port_num, backlog) {}
-    ~HTTPServerWrapper() {
-      shutdown();
-    }
+ public:
+  HTTPServerWrapper(uint16_t port_num, int backlog)
+      : m_server(port_num, backlog) {}
+  ~HTTPServerWrapper() { shutdown(); }
 
-    bool init() {
-      return m_pipe.init();
-    }
+  bool init() { return m_pipe.init(); }
 
-    void run() {
-      auto run_server = [](HTTPServer& server, int shutdown_fd) -> int {
-        LOG(INFO) << "Starting Thread";
-        return server.run(shutdown_fd);
-      };
+  void run() {
+    auto run_server = [](HTTPServer& server, int shutdown_fd) -> int {
+      LOG(INFO) << "Starting Thread";
+      return server.run(shutdown_fd);
+    };
 
-      m_server_thread = std::thread(run_server, std::ref(m_server), m_pipe.get_fd());
-    }
+    m_server_thread = std::thread(run_server, std::ref(m_server), m_pipe.get_fd());
+  }
 
-    bool shutdown() {
-      if (!m_pipe.shutdown()) { return false; }
-      m_server_thread.join();
-      return true;
-    }
+  bool shutdown() {
+    if (!m_pipe.shutdown()) { return false; }
+    m_server_thread.join();
+    return true;
+  }
 
-  private:
-    ShutdownPipeWrapper m_pipe;
-    HTTPServer m_server;
+ private:
+  ShutdownPipeWrapper m_pipe;
+  HTTPServer          m_server;
 
-    std::thread m_server_thread;
+  std::thread m_server_thread;
 };
 
 TEST(HTTPTest, TestAccept) {
-
   HTTPServerWrapper server(PORT_NUM, 1);
 
   EXPECT_TRUE(server.init());
@@ -293,7 +279,10 @@ TEST(HTTPTest, BadlyFormattedRequest) {
   EXPECT_EQ(response.code, 400u);
   EXPECT_EQ(response.status, "Bad Request");
 
-  nlohmann::json expected_json = {{"error", "Bad Request"}, {"message", "Error parsing request."}};
+  nlohmann::json expected_json = {
+      {  "error",            "Bad Request"},
+      {"message", "Error parsing request."}
+  };
   EXPECT_EQ(response.body, expected_json.dump(2));
 }
 
@@ -310,13 +299,8 @@ TEST(HTTPTest, BadHTTPVersion) {
   EXPECT_TRUE(client.create());
   EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
 
-  HTTPRequest request{
-    .method = "GET",
-    .resource = "/v0/GetQueryID",
-    .version = "HTTP/1.0",
-    .headers = {},
-    .body = ""
-  };
+  HTTPRequest request(HTTPRequest::GET, "/v0/GetQueryID");
+  request.version = "HTTP/1.0";
 
   EXPECT_TRUE(client.send(request));
 
@@ -330,7 +314,10 @@ TEST(HTTPTest, BadHTTPVersion) {
   EXPECT_EQ(response.code, 505u);
   EXPECT_EQ(response.status, "HTTP Version Not Supported");
 
-  nlohmann::json expected_json = {{"error", "HTTP Version Not Supported"}, {"message", "HTTP/1.1 Must be Used."}};
+  nlohmann::json expected_json = {
+      {  "error", "HTTP Version Not Supported"},
+      {"message",     "HTTP/1.1 Must be Used."}
+  };
   EXPECT_EQ(response.body, expected_json.dump(2));
 }
 
@@ -347,19 +334,15 @@ TEST(HTTPTest, BodyNoContentLength) {
   EXPECT_TRUE(client.create());
   EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
 
-  HTTPRequest request{
-    .method = "POST",
-    .resource = "/v0/ReportSearchResults",
-    .version = "HTTP/1.1",
-    .headers = {},
-    .body = nlohmann::json{
-      {"query_ID", 1234},
-      {"raw_query", "How do I?"},
-      {"results", { "link1", "link2", "link3"}},
-      {"clicked", 1},
-      {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
-    }.dump(2)
-  };
+  HTTPRequest request(HTTPRequest::POST, "/v0/ReportSearchResults",
+                      {
+                          {       "query_ID",                            1234},
+                          {      "raw_query",                     "How do I?"},
+                          {        "results",     {"link1", "link2", "link3"}},
+                          {        "clicked",                               1},
+                          {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
+  });
+  request.headers.erase("Content-Length");
 
   EXPECT_TRUE(client.send(request));
 
@@ -373,7 +356,10 @@ TEST(HTTPTest, BodyNoContentLength) {
   EXPECT_EQ(response.code, 411u);
   EXPECT_EQ(response.status, "Length Required");
 
-  nlohmann::json expected_json = {{"error", "Length Required"}, {"message", "Content-Length header must be specified when sending a request body"}};
+  nlohmann::json expected_json = {
+      {  "error",                                                     "Length Required"},
+      {"message", "Content-Length header must be specified when sending a request body"}
+  };
   EXPECT_EQ(response.body, expected_json.dump(2));
 }
 
@@ -390,21 +376,15 @@ TEST(HTTPTest, BodyBadContentLength) {
   EXPECT_TRUE(client.create());
   EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
 
-  HTTPRequest request{
-    .method = "POST",
-    .resource = "/v0/ReportSearchResults",
-    .version = "HTTP/1.1",
-    .headers = {},
-    .body = nlohmann::json{
-      {"query_ID", 1234},
-      {"raw_query", "How do I?"},
-      {"results", { "link1", "link2", "link3"}},
-      {"clicked", 1},
-      {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
-    }.dump(2)
-  };
-
-  request.headers["content-length"] = "ABCDEFG";
+  HTTPRequest request(HTTPRequest::POST, "/v0/ReportSearchResults",
+                      {
+                          {       "query_ID",                            1234},
+                          {      "raw_query",                     "How do I?"},
+                          {        "results",     {"link1", "link2", "link3"}},
+                          {        "clicked",                               1},
+                          {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
+  });
+  request.headers["Content-Length"] = "ABCDEFG";
 
   EXPECT_TRUE(client.send(request));
 
@@ -418,7 +398,10 @@ TEST(HTTPTest, BodyBadContentLength) {
   EXPECT_EQ(response.code, 400u);
   EXPECT_EQ(response.status, "Bad Request");
 
-  nlohmann::json expected_json = {{"error", "Bad Request"}, {"message", "Specified content length (ABCDEFG) is invalid"}};
+  nlohmann::json expected_json = {
+      {  "error",                                   "Bad Request"},
+      {"message", "Specified content length (ABCDEFG) is invalid"}
+  };
   EXPECT_EQ(response.body, expected_json.dump(2));
 }
 
@@ -435,21 +418,16 @@ TEST(HTTPTest, BodyWrongContentLength) {
   EXPECT_TRUE(client.create());
   EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
 
-  HTTPRequest request{
-    .method = "POST",
-    .resource = "/v0/ReportSearchResults",
-    .version = "HTTP/1.1",
-    .headers = {},
-    .body = nlohmann::json{
-      {"query_ID", 1234},
-      {"raw_query", "How do I?"},
-      {"results", { "link1", "link2", "link3"}},
-      {"clicked", 1},
-      {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
-    }.dump(2)
-  };
+  HTTPRequest request(HTTPRequest::POST, "/v0/ReportSearchResults",
+                      {
+                          {       "query_ID",                            1234},
+                          {      "raw_query",                     "How do I?"},
+                          {        "results",     {"link1", "link2", "link3"}},
+                          {        "clicked",                               1},
+                          {"query_timestamp", "Tue, 29 Oct 2024 16:56:32 GMT"}
+  });
 
-  request.headers["content-length"] = "69";
+  request.headers["Content-Length"] = "69";
 
   EXPECT_TRUE(client.send(request));
 
@@ -463,10 +441,13 @@ TEST(HTTPTest, BodyWrongContentLength) {
   EXPECT_EQ(response.code, 400u);
   EXPECT_EQ(response.status, "Bad Request");
 
-  nlohmann::json expected_json = {{"error", "Bad Request"}, {"message", "Provided content length 69 does not match actual content length " + std::to_string(request.body.length())}};
+  nlohmann::json expected_json = {
+      {  "error",                                                "Bad Request"},
+      {"message", "Provided content length 69 does not match actual content length "
+ + std::to_string(request.body.length())                     }
+  };
   EXPECT_EQ(response.body, expected_json.dump(2));
 }
-
 
 TEST(HTTPTest, BadResource) {
   HTTPServerWrapper server(PORT_NUM, 1);
@@ -481,13 +462,7 @@ TEST(HTTPTest, BadResource) {
   EXPECT_TRUE(client.create());
   EXPECT_TRUE(client.connect("127.0.0.1", PORT_NUM));
 
-  HTTPRequest request{
-    .method = "GET",
-    .resource = "/Fake/ResourceDoesntExist",
-    .version = "HTTP/1.1",
-    .headers = {},
-    .body = ""
-  };
+  HTTPRequest request(HTTPRequest::GET, "/Fake/ResourceDoesntExist");
 
   EXPECT_TRUE(client.send(request));
 
@@ -501,6 +476,9 @@ TEST(HTTPTest, BadResource) {
   EXPECT_EQ(response.code, 404u);
   EXPECT_EQ(response.status, "Not Found");
 
-  nlohmann::json expected_json = {{"error", "Not Found"}, {"message", "Resource (API function) not found"}};
+  nlohmann::json expected_json = {
+      {  "error",                         "Not Found"},
+      {"message", "Resource (API function) not found"}
+  };
   EXPECT_EQ(response.body, expected_json.dump(2));
 }
