@@ -45,79 +45,64 @@
 \subsubsection*{Internal Success Metrics:}
 
 \medskip\subsubsection*{Scalability:}
-The evaluation component will measure scalability by monitoring the time it takes
-for a query to run as the number of users using the search engine increases, and 
-also doing another monitor comparing the time it takes for a query to run based on 
-the overall storage of the entire search engine is scaled up. This can be done by 
-simulating the number of users using the search engine and the number of URLs put 
-into the crawler. If the SE seems to run 20-50\% slower as the number of users or 
-storage doubles, then the scalability success metric would be at a higher level. 
-However, if the SE runs 51-99\% slower as the number of users or storage doubles, 
-then the scalability success metric would be at a medium level. Running 100\% 
-slower or more as user or storage doubles would show that scalability is low.
+This success metric measured scalability, comparing the time it takes for a query 
+to run based on the component's storage and the number of users using the search 
+engine. Our component is very scalable in terms of storage, as it is a simple 
+implementation. However, as it runs in one thread, it does not allow multiple 
+users to utilize it. So, we have mixed results in terms of scalability, and if we 
+implemented multiple threads, then we would improve our scalability.
 
 \smallskip\subsubsection*{Testability:}
-- The evaluation component can measure testability by monitoring the total test 
-coverage and the success rate of the tests. If there is 91 to 100\% test coverage, 
-as well as passing all functional requirements and edge cases, then the 
-testability of the code is high level and is considered successful. However, if 
-the code does not pass at least 3 of the requirements, or if there is a lower test 
-coverage percent, such as 70-90\%, then the testability success metric would be 
-considered at a medium level. If the code does not pass more than 3, or if there 
-is a lower than 70\% test coverage, then the testability success metric would be 
-at a low level.
+The evaluation component can measure testability by monitoring the total test 
+coverage and the success rate of the tests. Overall, our current testability is 
+low, as we still have multiple requirements that we aren't fulfilling 
+(accommodating multiple users, finding synonyms for autofill, accepting "right to 
+be forgotten"). The success metric will increase as components contribute more 
+features to the search engine and create test cases for them.
 
 \smallskip\subsubsection*{Usability:}
 The evaluation component can measure the overall usability of the SE based on the 
-usage of the feedback we receive from UI/UX. If UI/UX sends negative feedback(such 
-as: “This Search Engine is too slow!”) or bug reports at a rate of less than 1\% 
-of the queries searched, this would suggest that there is a relatively high 
-usability score. If negative feedback or bug reports are between 1-5\% of the 
-queries searched, then it would be considered at a medium level With negative 
-feedback suggestions or bug reports that are greater than 5\% of the queries, the 
-usability success metric would be low.
+feedback we receive from UI/UX. Although there isn't any negative feedback or bug 
+reports, there aren't enough people using the search engine and sending bugs to 
+determine the usability. As the project continues, the search engine should 
+develop more and the usability success metric should increase. 
 
 \subsubsection*{Internal Outcomes:}
-PLACEHOLDER
-
-
+Overall, these internal outcomes are low, as the beta release is intended to be
+simpler, and having limited features. More work on our component is required, 
+as well as more implementation on the component once the component is tested
+and works at higher scales.
 
 
 \bigskip\subsection*{External Success Metric:}
 
 \medskip\subsubsection*{Predictability:}
 The evaluation component can measure predictability by measuring how often the 
-autofill function is called before a query ID is generated. If there are only 1-2 
-calls for the API getAutofill before the API call for getQueryID, then this would 
-suggest that a good autofill result was presented. However, if there are 3-5 API 
-calls for getAutofill before the API call for getQueryID, then the user likely was 
-not satisfied with the autofill results and had to keep typing before finally 
-getting a result, suggesting a medium predictability success metric. If there are 
-more than 5 API calls for getAutofill before the API call for getQueryID, then the 
-predictability success metric would be low.
+autofill function is called before a query ID is generated. Currently, the get 
+autofill results are limited, and cannot be improved through user data unless 
+more users use the search engine and the search engine receives data that can be 
+used for predictability, so currently the predictability is low. The 
+predictability will increase once we start having users utilize the search engine 
+and put their search history in the search engine.
 
 \smallskip\subsubsection*{Performance:}
 Since the evaluation component sends out the query ID and receives the query ID at 
 the end of the query runtime, it can conduct performance tests on the overall 
-performance of the query runtime. If the time to run the query is less than 1 
-second(what was mentioned in the requirements), then this suggests that the 
-performance metric is successful or the performance metric is at a high level. The 
-query running between 1 second and 2 seconds would suggest a medium-performance 
-metric. The query running for a runtime longer than 2 seconds would be considered 
-to have a low-performance metric. 
+performance of the query runtime. Currently, our component connects with UI/UX,  
+but UI/UX doesn't receive any results back yet. So, the performance is not 
+working, which shows a low performance. Once UI/UX can return results, then we can 
+measure the performance more accurately.
 
 \smallskip\subsubsection*{Relevancy:}
-Regarding the relevancy success metric, this refers to the link on which the user 
-clicks. If the user clicks on the first few links, the search results are 
+The relevancy success metric refers to the position of the link clicked on by the 
+user. If the user clicks on the first few links, the search results are 
 considered relevant and would have a high score. However, if the user clicks on a 
-later link, or even goes to the next page, then the search results would be 
-considered irrelevant, and therefore, would not be considered as successful. We 
-can measure this based on the average position of the clicked link. If the average 
-position of the clicked link is between the first three clicked links, then it 
-would be considered a high relevancy score. If the average position of the link 
-clicked is between the 4th and 6th positions, then it would be considered a medium 
-relevancy score. Finally, if the average relevancy score was lower than the 6th 
-position, then the relevant successful metric would be at a low level.
+later link, or even goes to the next page, the search results would be considered 
+irrelevant,  and therefore, would not be successful. Currently, our search engine 
+does not show results. However, our program should normally be able to provide 
+relevant results as the ranking component updates its algorithm. 
 
 \subsubsection*{External Outcomes:}
-PLACEHOLDER
+Currently, there are other components that are not functioning. This results in 
+the search engine not running, which means predictability, performance, and 
+relevancy of the search engine on the user side should all be considered low. 
