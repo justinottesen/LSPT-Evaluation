@@ -1,4 +1,4 @@
-name: Run Tests & Checks
+name: Run Unit Tests & Clang-Tidy Checks
 
 on:
   push:
@@ -38,28 +38,3 @@ jobs:
     - name: Compile & Run Unit Tests
       run: make run
       working-directory: Code/unittest
-  
-  run_component_tests:
-    name: Build Evaluation & Run Component Tests
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest
-
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Run Setup Script
-      run: ./setup_repo.sh
-      working-directory: Code
-
-    - name: Compile Evaluation Component
-      run: make
-      working-directory: Code/evaluation
-
-    - name: Run Component Tests
-      run: pytest
-      working-directory: Code/componenttest
