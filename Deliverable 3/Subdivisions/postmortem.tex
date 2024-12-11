@@ -1,8 +1,56 @@
 \subsection*{Team Retrospective}
-PLACEHOLDER
+Our job as the evaluation team was to create a component with the goals of both receiving and processing metrics for use by an admin, and to provide autofill results to the UI/UX component while a partial query is active. Below are some things that we reflected on.
+
+\smallskip\subsubsection*{Communication(Within Group)}
+Within our group, we had effective communication throughout the entirety of the project. We relied on out of class in-person meetings and communication over a private discord group chat. On weeks where we had deliverables or other milestones we scheduled meetings on Wednesday mornings to ensure that everyone was on the same page and to get some collaborative work completed. 
+\smallbreak
+During weekends and breaks, there was reduced communication and longer response times. Additionally, some pull requests were not approved by a majority of members until meeting in person or after an extended delay. These were not major issues, but could be improved.
+
+\smallskip\subsubsection*{Communication(Inter-Group)}
+Additionally, our group helped to facilitate communication between all the SE components. As the only component that has some level of connectivity with every other component, we found that only being able to effectively communicate in-person during class slowed down the development process. In order to alleviate this issue, we created and managed a class wide discord server and invited all the groups to join. 
+\smallbreak
+Once created, this server was used for the remainder of the semester for a large portion of inter-group communication. As the class continued on and more design decisions were made, the server served as both a good method of communication, and a hub where previous discussions and decisions could be readily found. 
+\smallbreak
+Although almost all teams, including ours, probably maintained a separate group chat or server, the creation of the class-wide server was particularly successful because it allowed for easy communication between groups outside of class.
+
+\iffalse
+\smallskip\subsubsection*{README file}
+Early on in our development process, Justin (team lead) created a comprehensive README file in our Git repository that outlined much of our design decisions and expectations for API calls. By having this completed and accessible, it gave us a good location to both keep all of our design decisions updated, and also to use as a reference when answering questions from other teams. In addition, it gave us a place to point other components to look at if they had any questions about formatting/expectations and none of us were available to respond.
+\medbreak
+The full README can be found on our project \href{https://github.com/justinottesen/LSPT-Evaluation}{GitHub Repository}.
+\fi
+
+\smallskip\subsubsection*{Design Reviews}
+As part of our design process prior to Deliverable 2, we were instructed to complete both an internal and an external design review. The internal design review was a good refresh; During it we stepped back and re-evaluated many of our design choices and ensured that we had not made any obvious mistakes. 
+\smallbreak
+In our external design review, we met with DDS and attempted to do a repeat of much of what we did internally. In that meeting we had several crucial takeaway and changes of design thanks to the knowledge of some of DDS' members.
+
+\bigbreak
+Both the internal and the external design reviews were very helpful for our project as a whole. They kept us on track and gave some outside views and responses to some ideas we had but were unsure about actually implementing. 
+\smallbreak
+There is the slight caveat that perhaps we were somewhat lucky that our external design review happened to be with a team that had the answers to some of our questions and that they were able to guide us towards making different design choices(HTTP/REST Api instead of UDP Sockets). If we had some different questions, or the other group's members we not knowledgeable about our problems/uncertainties then the external design review might not have been helpful for us. 
+\smallbreak 
+Perhaps doing a design review a few weeks earlier could have been more consistently productive, as even then we already had a solid design plan, but were still looking to either clean up or clarify sections of our design, and having an external group to use as a sort of ``sounding board" to bounce ideas off of and receive feedback from could have been extremely helpful. 
 
 \smallskip\subsection*{Requirement Outcomes}
-PLACEHOLDER
+These are the requirements that we identified as ``directly related" or ``key" requirements earlier in the semester. Each of the requirements are identified as being either ``met", ``partially met", ``no longer evaluation", ``for future releases", ``not met", or ``removed as requirement". 
+\smallbreak
+"for future releases", "not met", and "removed as requirement" all fall under the umbrella of "not met". 
+\begin{enumerate}
+\item \textbf{\#28 - Show search history as the user types a query}: removed as requirement. The only place user data is stored is in cookies within UI/UX, so if this is to be implemented it will not be done by Evaluation. 
+\item \textbf{\#29 - Suggest synonyms as the user types a query}: not met. 
+\item \textbf{\#32 - Allow users to easily remove some or all of their search history}: no longer evaluation.
+\item \textbf{\#33 - Auto-complete as the user types a query}: met. currently still a stub so it returns a default autofill.
+\item \textbf{\#34 - Auto-correct as the user types a query}: not met.
+\item \textbf{\#35 - Periodically ask users for feedback on query results and ranking}: no longer evaluation. look at \#58.
+\item \textbf{\#36 - Show overall SE usage, e.g., queries per day, top queries, etc.}: for future release. We are gathering this data, so at a later version will be able to display for admin viewing.
+\item \textbf{\#43 - Ensure search queries and user information is secure}: met. Evaluation do not store any user information.
+\item \textbf{\#44 - Support a "leave me alone" mode in which no tracking or history is recorded}: met. ALL data we receive is treated anonymously. IF UI/UX has an option for a "leave me alone" mode, they are not supposed to report any data to us, and thus is not our concern.
+\item \textbf{\#58 - Provide a straightforward means of reporting a bug or an issue}: met. There is a reportFeedback function that all UI/UX have been instructed to send bugs, issues, and any other feedback. 
+\item \textbf{\#59 - Do not require/support user accounts or specific user logging}: met. All user logging will/may be done using cookies and so are all client side.
+\item \textbf{NEW - have unique ID associated with each query}: partially met. If the Evaluation component crashes, the ID will reset back to 0.
+\item \textbf{IMPLICIT - gather performance metrics}: partially met. Only some of the components have currently connected with Evaluation to send metrics. our receiveMetrics() API call currently is only a stub. metrics are received but not saved yet. 
+\end{enumerate}
 
 \smallskip\subsection*{Future of Evaluation}
-PLACEHOLDER
+At this point all of our API calls either work or have a stub that mimics correct output. Our main goal for future releases would be to expand any stubs into fully realized functions. Also many parts of an advanced implementation were put at lower priority, and could begin to be implemented for future releases. 
