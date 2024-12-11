@@ -1,0 +1,44 @@
+Our component has all six of our promised APIs implemented with varying levels of completeness.
+
+\begin{center}
+    \begin{tabular}{ |c|c|c| } 
+     \hline
+     API Name & Implementation & Notes \\
+     \hline \hline
+     GetAutofill & Partial & Suggestions are currently hard-coded \\
+     GetQueryID & Full & Returns unique IDs, Not crash tolerant \\
+     ReportSearchResults & Minimal & Returns an "OK" \\
+     SubmitFeedback & Minimal & Returns an "OK" \\
+     GetQueryData & Partial & Respose is currently hard-coded \\
+     ReportMetrics & Minimal & Returns an "OK" \\
+     \hline
+    \end{tabular}
+\end{center}
+
+All of our API calls can be reached using our internal testing tool, \verb|evaltool|, which can simulate the input of any other component. Alongside this, there is extensive system and unit testing verifying correct behavior.
+
+\medskip
+
+We have successfully been able to interface with 3 other components: UI/UX, Link Analysis, and DDS
+
+\subsection*{UI/UX}
+
+\subsubsection*{GetAutofill}
+
+We were able to interface with one of the UI/UX teams through this API, with the input matching the spec, but the output is currently hard-coded to always return the same thing.
+
+\subsubsection*{GetQueryId}
+
+This API is fully implemented and correctly returns a unique query ID whenever it is called, with the exception of recovering after crashes. Currently, if the component crashes, it will restart at ID 0, instead of picking up where it last left off.
+
+\subsection*{Link Analysis}
+
+\subsubsection*{ReportSearchResults}
+
+UI/UX is the caller of this function, and they are not ready to call this. However, after this function is called, some data is forwarded to Link Analysis, and this connection has worked using a driver program simulating UI/UX output.
+
+\subsection*{Document Data Store}
+
+\subsubsection*{ReportMetrics}
+
+We are able to receive metrics from them and return an "OK". We do not actually store or process these metrics.
