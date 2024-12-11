@@ -5,76 +5,101 @@ All Tests and related data are stored in
 
 \subsection*{6 New Tests}
 
-\textbf{Test Type: Test ID}
+\textbf{System Test: INV\_API}
 \begin{itemize}
-    \item Associated requirement ID(s)
-    \item Desc: 
-    \item Pre-req: 
-    \item Steps: 
-    \item Expected Output: 
-    \item Side Effects: 
-    \item Results: (Not Conducted, Pass, Fail)
+    \item No Associated requirement IDs
+    \item Desc: Tested error of calling an invalid endpoint
+    \item Pre-req: 1. Evaluation Component is running
+    \item Steps: 1. Another component calls an invalid endpoint of Evaluation
+    \item Expected Output: 404 Error
+    \item Side Effects: None
+    \item Results: Pass
 \end{itemize}
 
-\smallskip\textbf{Test Type: Test ID}
+\medskip\textbf{System Test: UI\_RES-0.0}
 \begin{itemize}
-    \item Associated requirement ID(s)
-    \item Desc: 
-    \item Pre-req: 
-    \item Steps: 
-    \item Expected Output: 
-    \item Side Effects: 
-    \item Results: (Not Conducted, Pass, Fail)
+    \item No Associated requirement IDs
+    \item Desc: Test error receive of UI/UX results. (missing content length)
+    \item Pre-req: 1. Evaluation Component is running 2. UI/UX is showing results to a query to a user
+    \item Steps: 1. UI/UX sends invalid information to Evaluation
+    \item Expected Output: 411 Error
+    \item Side Effects: None
+    \item Results: Pass
 \end{itemize}
 
-\smallskip\textbf{Test Type: Test ID}
+\medskip\textbf{System Test: UI\_RES-0.1}
 \begin{itemize}
-    \item Associated requirement ID(s)
-    \item Desc: 
-    \item Pre-req: 
-    \item Steps: 
-    \item Expected Output: 
-    \item Side Effects: 
-    \item Results: (Not Conducted, Pass, Fail)
+    \item No Associated requirement IDs
+    \item Desc: Test error receive of UI/UX results. (non-numerical content length)
+    \item Pre-req: 1. Evaluation Component is running 2. UI/UX is showing results to a query to a user
+    \item Steps: 1. UI/UX sends invalid information to Evaluation
+    \item Expected Output: 400 Error
+    \item Side Effects: None
+    \item Results: Pass
 \end{itemize}
 
-\smallskip\textbf{Test Type: Test ID}
+\medskip\textbf{System Test: UI\_RES-0.2}
 \begin{itemize}
-    \item Associated requirement ID(s)
-    \item Desc: 
-    \item Pre-req: 
-    \item Steps: 
-    \item Expected Output: 
-    \item Side Effects: 
-    \item Results: (Not Conducted, Pass, Fail)
+    \item No Associated requirement IDs
+    \item Desc: Test error receive of UI/UX results. (incorrrect content length)
+    \item Pre-req: 1. Evaluation Component is running 2. UI/UX is showing results to a query to a user
+    \item Steps: 1. UI/UX sends invalid information to Evaluation
+    \item Expected Output: 400 Error
+    \item Side Effects: None
+    \item Results: Pass
 \end{itemize}
 
-\smallskip\textbf{Test Type: Test ID}
+\medskip\textbf{System Test: HTTP-0}
 \begin{itemize}
-    \item Associated requirement ID(s)
-    \item Desc: 
-    \item Pre-req: 
-    \item Steps: 
-    \item Expected Output: 
-    \item Side Effects: 
-    \item Results: (Not Conducted, Pass, Fail)
+    \item No Associated requirement IDs
+    \item Desc: Test Evaluation component is reachable via ip \& port
+    \item Pre-req: 1. Evaluation component is running 2. Another process attempts to connect
+    \item Steps: 1.Process connects to evaluation ip \& port
+    \item Expected Output: None
+    \item Side Effects: None
+    \item Results: Pass
 \end{itemize}
 
-\smallskip\textbf{Test Type: Test ID}
+\medskip\textbf{System Test: HTTP-1}
 \begin{itemize}
-    \item Associated requirement ID(s)
-    \item Desc: 
-    \item Pre-req: 
-    \item Steps: 
-    \item Expected Output: 
-    \item Side Effects: 
-    \item Results: (Not Conducted, Pass, Fail)
+    \item No Associated requirement IDs
+    \item Desc: Test GetAutoFill works via IP \& port
+    \item Pre-req: 1. Evaluation component is running 2. UI/UX calls GetAutoFill
+    \item Steps: 1. Process connects to Evaluation ip \& port 2. Request is processed and function is called
+    \item Expected Output: 200 OK Autofill suggestions
+    \item Side Effects: None
+    \item Results: Pass
 \end{itemize}
 
 \subsection*{Sample DataSets}
 
-INFO ON DATASETS USED
-\begin{itemize}
-    \item PLACEHOLDER
-  \end{itemize}
+Although we did not use any datasets, we did create sample data that we would 
+likely receive from UI/UX, as well as tested example metrics that would be 
+received from all other components. 
+
+\subsection*{Drivers/Stubs}
+
+Our component used multiple stubs to simulate interactions with other 
+components.
+\begin{enumerate}
+    \item \textbf{UI/UX Stub:} 
+    \begin{itemize}
+        \item This stub simulated interactions with the UI/UX component. The
+        stub called the endpoint \texttt{getQueryID} to simulate the UI/UX 
+        component starting the query. In addition, the stub would send query 
+        information, simulating once the user clicks on a specific link.
+    \end{itemize}
+    \item \textbf{Metrics Stub:} 
+    \begin{itemize}
+        \item This stub simulated interactions with all other components. The
+        stub called the endpoint \texttt{reportMetrics} to simulate all 
+        components submitting their metrics. 
+    \end{itemize}
+    \item \textbf{Link Analysis Stub:} 
+    \begin{itemize}
+        \item This stub simulated interactions with Link Analysis. This stub is 
+        to ensure that the query results that we send to Link Analysis is 
+        successfully sent and able to be read by the Link Analysis component.
+    \end{itemize}
+\end{enumerate}
 
