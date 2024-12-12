@@ -1,0 +1,93 @@
+We used GoogleTest for our unit tests. We don't have great coverage tools set up for this, we mostly used our own discretion when writing unit tests. They were used as a tool for ensuring incremental correctness. In hindsight, there should have been more of a focus on unit testing. An example run of our unit tests is shown below:
+
+\footnotesize
+
+\begin{verbatim}
+Running main() from /home/justin/School/CSCI 6460/LSPT-Evaluation/Code/googletest/googletest/src/gtest_main.cc
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from LoggerTest
+[ RUN      ] LoggerTest.TestBasic
+[       OK ] LoggerTest.TestBasic (0 ms)
+[ RUN      ] LoggerTest.TestChangeLevel
+[       OK ] LoggerTest.TestChangeLevel (0 ms)
+[ RUN      ] LoggerTest.TestDontShow
+[       OK ] LoggerTest.TestDontShow (0 ms)
+[ RUN      ] LoggerTest.TestFileLogging
+[       OK ] LoggerTest.TestFileLogging (0 ms)
+[ RUN      ] LoggerTest.TestCloseConsole
+[       OK ] LoggerTest.TestCloseConsole (0 ms)
+[----------] 5 tests from LoggerTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1 ms total)
+[  PASSED  ] 5 tests.
+bin/test_tcp
+Running main() from /home/justin/School/CSCI 6460/LSPT-Evaluation/Code/googletest/googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from TCPTest
+[ RUN      ] TCPTest.SimpleOpenClose
+[       OK ] TCPTest.SimpleOpenClose (0 ms)
+[ RUN      ] TCPTest.SimpleBind
+[       OK ] TCPTest.SimpleBind (0 ms)
+[ RUN      ] TCPTest.SocketClosesInDestructor
+[       OK ] TCPTest.SocketClosesInDestructor (0 ms)
+[ RUN      ] TCPTest.TestListenConnectAccept
+[       OK ] TCPTest.TestListenConnectAccept (0 ms)
+[ RUN      ] TCPTest.TestMessaging
+[       OK ] TCPTest.TestMessaging (0 ms)
+[ RUN      ] TCPTest.TestSplitSends
+[       OK ] TCPTest.TestSplitSends (0 ms)
+[ RUN      ] TCPTest.TestTimeout
+[       OK ] TCPTest.TestTimeout (105 ms)
+[ RUN      ] TCPTest.TestSockStream
+[       OK ] TCPTest.TestSockStream (103 ms)
+[----------] 8 tests from TCPTest (209 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (209 ms total)
+[  PASSED  ] 8 tests.
+bin/test_http
+Running main() from /home/justin/School/CSCI 6460/LSPT-Evaluation/Code/googletest/googletest/src/gtest_main.cc
+[==========] Running 13 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 3 tests from ParseHTTPTest
+[ RUN      ] ParseHTTPTest.ParseEmptyHTTPRequest
+[       OK ] ParseHTTPTest.ParseEmptyHTTPRequest (100 ms)
+[ RUN      ] ParseHTTPTest.ParseExampleGetAutofill
+[       OK ] ParseHTTPTest.ParseExampleGetAutofill (103 ms)
+[ RUN      ] ParseHTTPTest.ParseExampleReportSearchResults
+[       OK ] ParseHTTPTest.ParseExampleReportSearchResults (103 ms)
+[----------] 3 tests from ParseHTTPTest (308 ms total)
+
+[----------] 10 tests from HTTPTest
+[ RUN      ] HTTPTest.ToStringSendAndReceive
+[       OK ] HTTPTest.ToStringSendAndReceive (103 ms)
+[ RUN      ] HTTPTest.ResponseConstructors
+[       OK ] HTTPTest.ResponseConstructors (0 ms)
+[ RUN      ] HTTPTest.TestShutdown
+[       OK ] HTTPTest.TestShutdown (100 ms)
+[ RUN      ] HTTPTest.TestAccept
+[       OK ] HTTPTest.TestAccept (50 ms)
+[ RUN      ] HTTPTest.BadlyFormattedRequest
+[       OK ] HTTPTest.BadlyFormattedRequest (61 ms)
+[ RUN      ] HTTPTest.BadHTTPVersion
+[       OK ] HTTPTest.BadHTTPVersion (61 ms)
+[ RUN      ] HTTPTest.BodyNoContentLength
+[       OK ] HTTPTest.BodyNoContentLength (62 ms)
+[ RUN      ] HTTPTest.BodyBadContentLength
+[       OK ] HTTPTest.BodyBadContentLength (70 ms)
+[ RUN      ] HTTPTest.BodyWrongContentLength
+[       OK ] HTTPTest.BodyWrongContentLength (61 ms)
+[ RUN      ] HTTPTest.BadResource
+[       OK ] HTTPTest.BadResource (62 ms)
+[----------] 10 tests from HTTPTest (637 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 2 test suites ran. (946 ms total)
+[  PASSED  ] 13 tests. \end{verbatim}
+
+\normalsize
+
+As can be seen above, there were 5 tests for the logging class, 8 for the TCP socket wrapper class, and 13 for the HTTP Server class, for a total of 26 unit tests. These are the only classes which were included in the code, and we would estimate about ~80\% coverage, focused more heavily on the more complex components: TCP and HTTP.
